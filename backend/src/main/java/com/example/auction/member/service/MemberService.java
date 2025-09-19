@@ -144,7 +144,7 @@ public class MemberService extends DefaultOAuth2UserService implements UserDetai
         String username;
         String role = RoleType.USER.name();
         String name;
-        String phone;
+        String phone = "010-0000-0000";
 
         // 제공자별 데이터 획득
         String registrationId = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
@@ -175,8 +175,12 @@ public class MemberService extends DefaultOAuth2UserService implements UserDetai
                     .username(username)
                     .password("")
                     .name(name)
-                    .socialProviderType(SocialProviderType.valueOf(registrationId))
+                    .nickname(name)
+                    .phone(phone)
                     .role(RoleType.USER)
+                    .isSocial(true)
+                    .socialProviderType(SocialProviderType.valueOf(registrationId))
+                    .status(MemberStatus.TEMP)
                     .build();
 
             memberRepository.save(newMember);

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.util.StreamUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -67,9 +69,11 @@ public class JsonAuthenticationFilter extends AbstractAuthenticationProcessingFi
         }
 
         String username = loginMap.get(usernameParameter);
-        username = (username != null) ? username.trim() : "";
         String password = loginMap.get(passwordParameter);
-        password = (password != null) ? password : "";
+
+        if (!StringUtils.hasText(username) || !StringUtils.hasText(password)) {
+            throw new BadCredentialsException("아이디와 비밀번호는 필수입니다.");
+        }
 
         UsernamePasswordAuthenticationToken authRequest = UsernamePasswordAuthenticationToken.unauthenticated(username,
                 password);

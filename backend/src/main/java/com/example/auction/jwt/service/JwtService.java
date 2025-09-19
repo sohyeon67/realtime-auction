@@ -92,9 +92,9 @@ public class JwtService {
                 .refresh(newRefreshToken)
                 .build();
 
-        removeRefresh(refreshToken);
-//        refreshTokenRepository.flush(); // 같은 트랜잭션 내부라 삭제 -> 생성 문제 해결
-        refreshTokenRepository.save(newRefreshEntity);
+        removeRefresh(refreshToken); // 트랜잭션이 끝날 때까지 delete를 보내지 않고 영속성 컨텍스트에서만 삭제처리
+        refreshTokenRepository.flush(); // DB에 삭제 반영
+        refreshTokenRepository.save(newRefreshEntity); // 새 토큰 저장
 
         // 기존 쿠키 제거
         Cookie refreshCookie = new Cookie("refreshToken", null);

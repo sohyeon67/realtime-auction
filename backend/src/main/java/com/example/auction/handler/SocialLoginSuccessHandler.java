@@ -17,6 +17,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
+ * Spring Security OAuth2 Client + SuccessHandler 구조 => redirect 응답 이용
+ *
  * 로그인 성공 -> 우리쪽으로 리다이렉트 -> 필터가 가로채서 리소스 서버로부터 정보 획득 ->
  * OAuth2UserDetailsService에서 DB 저장 및 OAuth2UserDetails 반환
  * -> 성공 핸들러 실행. jwt 토큰 생성
@@ -51,7 +53,7 @@ public class SocialLoginSuccessHandler implements AuthenticationSuccessHandler {
         // 쿼리 파라미터 전달 -> URL에 토큰이 노출되고 히스토리에 남아 보안 취약
         // 쿠키 방식 - 자동 전송 사용하기
         response.addCookie(createCookie("refreshToken", refreshToken));
-        response.sendRedirect("http://localhost:5173/cookie"); // 소셜로그인 성공 후 쿠키를 받아서 백엔드 쪽으로 쿠키를 헤더로 바꾸도록함
+        response.sendRedirect("http://localhost:5173/auth/callback"); // 소셜로그인 성공 후 쿠키를 받아서 백엔드 쪽으로 쿠키를 헤더로 바꾸도록함
     }
 
     private Cookie createCookie(String key, String value) {
