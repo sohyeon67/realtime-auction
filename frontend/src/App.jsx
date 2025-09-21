@@ -7,6 +7,7 @@ import AdminLayout from './layouts/AdminLayout';
 // Auth 페이지
 import Login from './pages/auth/Login';
 import Signup from './pages/auth/Signup';
+import SocialLoginSuccess from './pages/auth/SocialLoginSuccess';
 
 // User 페이지
 import Home from './pages/user/Home';
@@ -15,7 +16,8 @@ import AuctionList from './pages/user/AuctionList';
 // Admin 페이지
 import Dashboard from './pages/admin/Dashboard';
 import Users from './pages/admin/Users';
-import SocialLoginSuccess from './pages/auth/SocialLoginSuccess';
+import Categories from './pages/admin/Categories';
+
 
 function App() {
 
@@ -38,6 +40,7 @@ function App() {
           <Route path="/admin/*" element={<AdminLayout />}>
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="users" element={<Users />} />
+            <Route path="categories" element={<Categories />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/user/home" replace />} />
