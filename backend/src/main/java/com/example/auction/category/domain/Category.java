@@ -35,6 +35,7 @@ public class Category extends BaseTime {
     private int priority;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OrderBy("priority ASC")
     @Builder.Default
     private List<Category> children = new ArrayList<>();
 

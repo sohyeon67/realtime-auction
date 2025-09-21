@@ -28,9 +28,17 @@ public class CategoryService {
 
     @Transactional
     public void saveBatch(CategoryBatchReqDto dto) {
-        // 삭제 처리
-        for (CategoryDeleteReqDto del : dto.getDeleted()) {
-            categoryRepository.deleteById(del.getId());
+
+        // 새로 추가
+        for (CategorySaveReqDto add : dto.getAdded()) {
+            Category category = Category.builder()
+                    .name(add.getName())
+                    .build();
+            if (add.getParentId() != null) {
+                Category parent = getCategory(add.getParentId());
+                category.changeParent(parent);
+            }
+            categoryRepository.save(category);
         }
 
         // 업데이트 처리
@@ -45,17 +53,11 @@ public class CategoryService {
             }
         }
 
-        // 새로 추가
-        for (CategorySaveReqDto add : dto.getAdded()) {
-            Category category = Category.builder()
-                    .name(add.getName())
-                    .build();
-            if (add.getParentId() != null) {
-                Category parent = getCategory(add.getParentId());
-                category.changeParent(parent);
-            }
-            categoryRepository.save(category);
+        // 삭제 처리
+        for (CategoryDeleteReqDto del : dto.getDeleted()) {
+            categoryRepository.deleteById(del.getId());
         }
+
     }
 
     public List<CategoryHierarchyResDto> getCategoryHierarchy() {

@@ -87,6 +87,8 @@ public class SecurityConfig {
                         // 이 부분은 컨트롤러(서블릿) 경로를 말한다. 필터 경로 x
                         .requestMatchers("/jwt/exchange", "/jwt/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/members", "/api/members/exist").permitAll()
+                        .requestMatchers("/api/categories").permitAll()
+                        .requestMatchers("/api/categories/batch").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // 관리자 권한 필요
                         .anyRequest().authenticated()) // 로그인 필요(가장 마지막)
 
