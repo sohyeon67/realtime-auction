@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 /**
- * JSON
+ * JSON 형식의 username, password를 받는 로그인 필터
  */
 public class JsonAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
