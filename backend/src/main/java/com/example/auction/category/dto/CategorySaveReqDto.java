@@ -7,7 +7,8 @@ import lombok.Data;
 public class CategorySaveReqDto {
 
     @NotBlank
-    private String name;
+    private String id; // 카테고리 계층 삽입 및 수정시 구분하기 위한 임시 트리노드 아이디
 
-    private Long parentId;
+    @NotBlank
+    private String name;
 }
