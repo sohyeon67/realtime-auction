@@ -1,12 +1,13 @@
 import { Container } from '@mui/material';
 import { Outlet } from 'react-router-dom'
+import Header from '../components/user/Header';
 
 
 
 export default function UserLayout() {
   return (
-    <Container fixed>
-      <header style={{ background: "#eee", padding: "1rem" }}>사용자 헤더</header>
+    <Container>
+      <Header />
       <main style={{ padding: "1rem" }}>
         <Outlet />
       </main>
