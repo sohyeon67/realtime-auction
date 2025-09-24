@@ -1,0 +1,35 @@
+.node-container,
+.node-content {
+  display: flex;
+  height: 100%;
+  align-items: center;
+}
+
+.node-content {
+  cursor: pointer;
+
+}
+
+.node-container .category-actions {
+  visibility: hidden;
+}
+.node-container:hover .category-actions {
+  visibility: visible;
+}
+
+[role="treeitem"]:hover {
+  background-color: rgba(54, 167, 202, 0.192);
+}
+
+[role="treeitem"]:focus-within {
+  background-color: rgba(54, 168, 202, 0.4);
+  outline: none;
+}
+
+.category-actions {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-right: 10px;
+}
