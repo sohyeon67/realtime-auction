@@ -36,13 +36,8 @@ public class CategoryService {
         // (임시 ID, 실제 DB ID) 매핑
         Map<String, Long> tempIdMap = new HashMap<>();
 
-        // 카테고리 추가 - 항상 임시 아이디가 들어온다.
-        // 새로 생성된 노드끼리 부모-자식 관계가 순서대로 들어있지 않을 경우 에러가나기 때문에 저장과 수정을 분리한다.
-        // 기존에는 저장할 때 parentId를 받도록 했었는데 핵심은 임시 ID를 먼저 등록하고, 부모가 있는 경우 연결하는 순서를 보장하도록 한다.
-
-        // 새로 추가된 노드 모두 DB에 저장 (부모는 나중에 연결), 부모 지정 제거
-
         // 1. 새 카테고리 추가
+        // 새로 추가된 노드 모두 DB에 저장 (부모는 나중에 연결)
         for (CategorySaveReqDto add : dto.getAdded()) {
             Category category = Category.builder()
                     .name(add.getName())
@@ -55,7 +50,6 @@ public class CategoryService {
         }
 
         // 2. 트리 구조 기반 업데이트
-        // 부모 노드와 priority 반영
         // dirty checking 이용, commit 시점에 update 쿼리 발생
         for (CategoryUpdateReqDto upd : dto.getUpdated()) {
 
@@ -89,7 +83,6 @@ public class CategoryService {
         for (CategoryDeleteReqDto del : dto.getDeleted()) {
             categoryRepository.deleteById(del.getId()); // 영속성 컨텍스트에서 객체 제거, 트랜잭션 commit 시점에 삭제 쿼리가 나간다.
         }
-
     }
 
     public List<CategoryHierarchyResDto> getCategoryHierarchy() {
