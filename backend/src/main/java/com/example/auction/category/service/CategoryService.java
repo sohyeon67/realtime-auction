@@ -26,10 +26,6 @@ public class CategoryService {
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
     }
 
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
-    }
-
     @Transactional
     public void saveBatch(CategoryBatchReqDto dto) {
 
@@ -81,13 +77,19 @@ public class CategoryService {
 
         // 3. 삭제 처리
         for (CategoryDeleteReqDto del : dto.getDeleted()) {
-            categoryRepository.deleteById(del.getId()); // 영속성 컨텍스트에서 객체 제거, 트랜잭션 commit 시점에 삭제 쿼리가 나간다.
+            Category delcategory = getCategory(del.getId());
+
+            Category parent = delcategory.getParent();
+            if (parent != null) {
+                parent.getChildren().remove(delcategory);
+            }
+            categoryRepository.delete(delcategory); // 영속성 컨텍스트에서 객체 제거, 트랜잭션 commit 시점에 삭제 쿼리가 나간다.
         }
     }
 
+    // 트리(계층) 형태로 가져오기
     public List<CategoryHierarchyResDto> getCategoryHierarchy() {
         List<Category> byParentIdIsNull = categoryRepository.findByParentIdIsNullOrderByPriorityAsc();
-        List<CategoryHierarchyResDto> collect = byParentIdIsNull.stream().map(CategoryHierarchyResDto::of).collect(Collectors.toList());
-        return collect;
+        return byParentIdIsNull.stream().map(CategoryHierarchyResDto::of).collect(Collectors.toList());
     }
 }
