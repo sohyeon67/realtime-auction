@@ -1,17 +1,16 @@
 import { Container } from '@mui/material';
 import { Outlet } from 'react-router-dom'
 import Header from '../components/user/Header';
-
-
+import Footer from '../components/user/Footer';
+import AppAppBar from '../components/user/AppAppBar';
 
 export default function UserLayout() {
   return (
-    <Container>
-      <Header />
-      <main style={{ padding: "1rem" }}>
+    <>
+      {/* <Header /> */}
+      <AppAppBar/>
         <Outlet />
-      </main>
-      <footer style={{ background: "#eee", padding: "1rem" }}>푸터</footer>
-    </Container>
+      <Footer/>
+      </>
   );
 }
