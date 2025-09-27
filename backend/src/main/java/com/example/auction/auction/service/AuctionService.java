@@ -1,13 +1,17 @@
 package com.example.auction.auction.service;
 
 import com.example.auction.auction.domain.Auction;
+import com.example.auction.auction.domain.AuctionImage;
 import com.example.auction.auction.domain.AuctionStatus;
 import com.example.auction.auction.dto.AuctionResDto;
 import com.example.auction.auction.dto.AuctionSaveReqDto;
 import com.example.auction.auction.dto.AuctionUpdateReqDto;
+import com.example.auction.auction.repository.AuctionImageRepository;
 import com.example.auction.auction.repository.AuctionRepository;
 import com.example.auction.category.domain.Category;
 import com.example.auction.category.repository.CategoryRepository;
+import com.example.auction.file.dto.UploadFile;
+import com.example.auction.file.service.FileUploadService;
 import com.example.auction.member.domain.Member;
 import com.example.auction.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,17 +20,23 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class AuctionService {
 
+    private final FileUploadService fileUploadService;
+
     private final AuctionRepository auctionRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
+    private final AuctionImageRepository auctionImageRepository;
 
-    public Long create(AuctionSaveReqDto dto) {
+    public Long create(AuctionSaveReqDto dto) throws IOException {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Member seller = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
@@ -34,6 +44,7 @@ public class AuctionService {
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
 
+        // 경매 생성
         Auction auction = Auction.builder()
                 .title(dto.getTitle())
                 .category(category)
@@ -45,8 +56,30 @@ public class AuctionService {
                 .endTime(dto.getEndTime())
                 .status(AuctionStatus.READY)
                 .build();
+        auctionRepository.save(auction);
 
-        return auctionRepository.save(auction).getId();
+        // 이미지 업로드
+        for (int i = 0; i < dto.getImages().size(); i++) {
+            MultipartFile file = dto.getImages().get(i);
+            int sortOrder = dto.getSortOrders().get(i);
+            boolean isMain = dto.getIsMains().get(i);
+
+            // 업로드
+            UploadFile upload = fileUploadService.upload(file);
+
+            // 엔티티 생성
+            AuctionImage auctionImage = AuctionImage.builder()
+                    .auction(auction)
+                    .originalName(upload.getOriginalName())
+                    .savedName(upload.getSavedName())
+                    .filePath(upload.getFilePath())
+                    .sortOrder(sortOrder)
+                    .isMain(isMain)
+                    .build();
+            auctionImageRepository.save(auctionImage);
+        }
+
+        return auction.getId();
     }
 
     @Transactional(readOnly = true)

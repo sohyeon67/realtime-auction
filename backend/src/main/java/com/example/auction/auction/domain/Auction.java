@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -33,7 +35,7 @@ public class Auction extends BaseTime {
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "seller_id", nullable = false)
     private Member seller;
 
     @Column(nullable = false)
@@ -51,6 +53,10 @@ public class Auction extends BaseTime {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AuctionStatus status;
+
+    @OneToMany(mappedBy = "auction")
+    @Builder.Default
+    private List<AuctionImage> images = new ArrayList<>();
 
     public void updateTitle(String title) {
         this.title = title;
