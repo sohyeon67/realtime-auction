@@ -16,6 +16,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from '@mui/icons-material/Search';
 import { InputBase, Paper } from '@mui/material';
+import { Link } from 'react-router-dom';
 
 export default function AppAppBar() {
   const [open, setOpen] = React.useState(false);
@@ -46,17 +47,8 @@ export default function AppAppBar() {
               <Button variant="text" color="info" size="small">
                 FAQ
               </Button>
-              <Button variant="text" color="info" size="small">
-                Highlights
-              </Button>
-              <Button variant="text" color="info" size="small">
-                Pricing
-              </Button>
               <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>
                 FAQ
-              </Button>
-              <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>
-                Blog
               </Button>
             </Box>
 
@@ -96,6 +88,9 @@ export default function AppAppBar() {
                 <AccountCircle />
               </IconButton>
             </Box>
+            <Button color="primary" variant="contained" size="small" component={Link} to="/user/auctions/register">
+              물품등록
+            </Button>
             <Button color="primary" variant="contained" size="small">
               로그인
             </Button>

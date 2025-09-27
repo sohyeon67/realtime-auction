@@ -53,16 +53,17 @@ export default function AuctionList() {
               minWidth: 250,
             }}
             >
-              <CardHeader
-                title="카테고리"
-                titleTypographyProps={{ variant: "h6" }}
-              />
-              <Divider />
               <CardContent>
+                <Typography variant="h6" component="div">
+                  카테고리
+                </Typography>
                 <SimpleTreeView disableSelection>
                   {renderTree(categories)}
                 </SimpleTreeView>
               </CardContent>
+
+              <Divider />
+
 
             </Card>
           </Grid>

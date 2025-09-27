@@ -17,6 +17,7 @@ import AuctionList from './pages/user/AuctionList';
 import Dashboard from './pages/admin/Dashboard';
 import Users from './pages/admin/Users';
 import Categories from './pages/admin/Categories';
+import AuctionRegister from './pages/user/AuctionRegister';
 
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
           <Route path="/user/*" element={<UserLayout />}>
             <Route path="home" element={<Home />} />
             <Route path="auctions" element={<AuctionList />} />
+            <Route path="auctions/register" element={<AuctionRegister />} />
           </Route>
 
           <Route path="/admin/*" element={<AdminLayout />}>
