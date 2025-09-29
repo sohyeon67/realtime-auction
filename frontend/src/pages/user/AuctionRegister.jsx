@@ -34,9 +34,9 @@ export default function AuctionRegister() {
     formData.append("endTime", data.endTime);
 
     data.images.forEach((file, index) => {
-      formData.append("images", file);
-      formData.append("sortOrders", index);
-      formData.append("isMains", index === isMain);
+      formData.append(`files[${index}].file`, file);
+      formData.append(`files[${index}].sortOrder`, index);
+      formData.append(`files[${index}].isMain`, index === isMain);
     });
 
     api.post("/api/auctions", formData, {
