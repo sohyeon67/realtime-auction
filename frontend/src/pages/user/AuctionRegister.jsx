@@ -3,8 +3,15 @@ import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import DeleteIcon from "@mui/icons-material/Delete";
 import api from "../../api/api";
+import { useNavigate, useParams } from "react-router-dom";
 
 export default function AuctionRegister() {
+
+  const navigate = useNavigate();
+
+  const { auctionId } = useParams();
+  const isEdit = !!auctionId;
+
   const {
     control,
     handleSubmit,
@@ -39,10 +46,15 @@ export default function AuctionRegister() {
       formData.append(`files[${index}].isMain`, index === isMain);
     });
 
-    api.post("/api/auctions", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
-      .then(res => console.log(res))
+    const apiCall = isEdit
+      ? api.patch(`/api/auctions/${auctionId}`, formData)
+      : api.post("/api/auctions", formData);
+
+    apiCall
+      .then(res => {
+        const id = res.data.auctionId;
+        navigate(`/user/auctions/${id}`);
+      })
       .catch(err => console.error(err));
   };
 
@@ -51,6 +63,29 @@ export default function AuctionRegister() {
       .then(res => setCategories(res.data))
       .catch(() => alert("카테고리 불러오기 실패"));
   }, []);
+
+  // 수정 페이지 기존 데이터 불러오기
+  useEffect(() => {
+    if (!isEdit) return;
+
+    api.get(`/api/auctions/${auctionId}`)
+      .then(res => {
+        const data = res.data;
+
+        // 폼 입력값 세팅
+        setValue("title", data.title);
+        setValue("categoryId", data.categoryId);
+        setValue("description", data.description);
+        setValue("startPrice", data.startPrice);
+        setValue("startTime", data.startTime);
+        setValue("endTime", data.endTime);
+
+        // 이미지 세팅
+        setValue("images", data.images || []);
+        setIsMain(data.images.findIndex(img => img.isMain));
+      })
+      .catch(err => console.error(err));
+  }, [auctionId]);
 
   const flattenCategories = (categories, parentName = "") => {
     return categories.flatMap(cat => {

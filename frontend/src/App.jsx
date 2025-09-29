@@ -18,6 +18,7 @@ import Dashboard from './pages/admin/Dashboard';
 import Users from './pages/admin/Users';
 import Categories from './pages/admin/Categories';
 import AuctionRegister from './pages/user/AuctionRegister';
+import AuctionDetails from './pages/user/AuctionDetails';
 
 
 function App() {
@@ -37,6 +38,8 @@ function App() {
             <Route path="home" element={<Home />} />
             <Route path="auctions" element={<AuctionList />} />
             <Route path="auctions/register" element={<AuctionRegister />} />
+            <Route path="auctions/:auctionId" element={<AuctionDetails />} />
+            <Route path="auctions/:auctionId/edit" element={<AuctionRegister />} />
           </Route>
 
           <Route path="/admin/*" element={<AdminLayout />}>
