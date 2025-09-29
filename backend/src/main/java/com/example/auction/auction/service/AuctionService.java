@@ -3,6 +3,7 @@ package com.example.auction.auction.service;
 import com.example.auction.auction.domain.Auction;
 import com.example.auction.auction.domain.AuctionImage;
 import com.example.auction.auction.domain.AuctionStatus;
+import com.example.auction.auction.dto.AuctionFileReqDto;
 import com.example.auction.auction.dto.AuctionResDto;
 import com.example.auction.auction.dto.AuctionSaveReqDto;
 import com.example.auction.auction.dto.AuctionUpdateReqDto;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -59,10 +61,11 @@ public class AuctionService {
         auctionRepository.save(auction);
 
         // 이미지 업로드
-        for (int i = 0; i < dto.getImages().size(); i++) {
-            MultipartFile file = dto.getImages().get(i);
-            int sortOrder = dto.getSortOrders().get(i);
-            boolean isMain = dto.getIsMains().get(i);
+        for (int i = 0; i < dto.getFiles().size(); i++) {
+            List<AuctionFileReqDto> files = dto.getFiles();
+            MultipartFile file = files.get(i).getFile();
+            Integer sortOrder = files.get(i).getSortOrder();
+            Boolean isMain = files.get(i).getIsMain();
 
             // 업로드
             UploadFile upload = fileUploadService.upload(file);

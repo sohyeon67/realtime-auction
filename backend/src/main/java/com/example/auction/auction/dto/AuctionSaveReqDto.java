@@ -34,8 +34,6 @@ public class AuctionSaveReqDto {
     @NotNull(message = "종료 시간을 지정해주세요")
     private LocalDateTime endTime;
 
-    private List<MultipartFile> images; // 파일들
-    private List<Integer> sortOrders;   // 순서
-    private List<Boolean> isMains;      // 대표 이미지 여부
+    private List<AuctionFileReqDto> files;
 
 }
