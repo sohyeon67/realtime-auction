@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
-public class AuctionFileReqDto {
+public class AuctionImageReqDto {
 
     private MultipartFile file;
     private Boolean isMain;

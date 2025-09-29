@@ -1,7 +1,7 @@
 package com.example.auction.auction.controller;
 
 import com.example.auction.auction.dto.AuctionIdResDto;
-import com.example.auction.auction.dto.AuctionResDto;
+import com.example.auction.auction.dto.AuctionDetailResDto;
 import com.example.auction.auction.dto.AuctionSaveReqDto;
 import com.example.auction.auction.dto.AuctionUpdateReqDto;
 import com.example.auction.auction.service.AuctionService;
@@ -27,13 +27,13 @@ public class AuctionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<AuctionResDto> getOne(@PathVariable Long id) {
-        AuctionResDto dto = auctionService.getAuction(id);
+    public ResponseEntity<AuctionDetailResDto> getOne(@PathVariable Long id) {
+        AuctionDetailResDto dto = auctionService.getAuction(id);
         return ResponseEntity.ok(dto);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<AuctionIdResDto> update(@PathVariable Long id, @RequestBody AuctionUpdateReqDto dto) {
+    public ResponseEntity<AuctionIdResDto> update(@PathVariable Long id, AuctionUpdateReqDto dto) {
         auctionService.update(id, dto);
         return ResponseEntity.ok(new AuctionIdResDto(id));
     }

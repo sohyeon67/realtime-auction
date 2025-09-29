@@ -3,14 +3,12 @@ package com.example.auction.auction.service;
 import com.example.auction.auction.domain.Auction;
 import com.example.auction.auction.domain.AuctionImage;
 import com.example.auction.auction.domain.AuctionStatus;
-import com.example.auction.auction.dto.AuctionFileReqDto;
-import com.example.auction.auction.dto.AuctionResDto;
-import com.example.auction.auction.dto.AuctionSaveReqDto;
-import com.example.auction.auction.dto.AuctionUpdateReqDto;
+import com.example.auction.auction.dto.*;
 import com.example.auction.auction.repository.AuctionImageRepository;
 import com.example.auction.auction.repository.AuctionRepository;
 import com.example.auction.category.domain.Category;
 import com.example.auction.category.repository.CategoryRepository;
+import com.example.auction.file.domain.FileCategory;
 import com.example.auction.file.dto.UploadFile;
 import com.example.auction.file.service.FileUploadService;
 import com.example.auction.member.domain.Member;
@@ -61,14 +59,11 @@ public class AuctionService {
         auctionRepository.save(auction);
 
         // 이미지 업로드
-        for (int i = 0; i < dto.getFiles().size(); i++) {
-            List<AuctionFileReqDto> files = dto.getFiles();
-            MultipartFile file = files.get(i).getFile();
-            Integer sortOrder = files.get(i).getSortOrder();
-            Boolean isMain = files.get(i).getIsMain();
+        for (AuctionImageReqDto fileDto : dto.getFiles()) {
+            MultipartFile file = fileDto.getFile();
 
             // 업로드
-            UploadFile upload = fileUploadService.upload(file);
+            UploadFile upload = fileUploadService.upload(file, FileCategory.AUCTION);
 
             // 엔티티 생성
             AuctionImage auctionImage = AuctionImage.builder()
@@ -76,8 +71,8 @@ public class AuctionService {
                     .originalName(upload.getOriginalName())
                     .savedName(upload.getSavedName())
                     .filePath(upload.getFilePath())
-                    .sortOrder(sortOrder)
-                    .isMain(isMain)
+                    .sortOrder(fileDto.getSortOrder())
+                    .isMain(fileDto.getIsMain())
                     .build();
             auctionImageRepository.save(auctionImage);
         }
@@ -86,9 +81,36 @@ public class AuctionService {
     }
 
     @Transactional(readOnly = true)
-    public AuctionResDto getAuction(Long id) {
+    public AuctionDetailResDto getAuction(Long id) {
         Auction auction = findAuctionOrThrow(id);
-        return AuctionResDto.fromEntity(auction);
+
+        // 이미지 URL 변환
+        List<AuctionImageResDto> images = auction.getImages().stream()
+                .map(img -> AuctionImageResDto.builder()
+                        .url(fileUploadService.getFileUrl(img.getFilePath())) // 상대경로 -> URL
+                        .sortOrder(img.getSortOrder())
+                        .isMain(img.isMain())
+                        .build()
+                ).toList();
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        boolean canEdit = auction.getSeller().getUsername().equals(username);
+
+        return AuctionDetailResDto.builder()
+                .auctionId(auction.getId())
+                .title(auction.getTitle())
+                .categoryName(auction.getCategory().getName())
+                .description(auction.getDescription())
+                .sellerId(auction.getSeller().getId())
+                .sellerNickname(auction.getSeller().getNickname())
+                .startPrice(auction.getStartPrice())
+                .currentPrice(auction.getCurrentPrice())
+                .startTime(auction.getStartTime())
+                .endTime(auction.getEndTime())
+                .status(auction.getStatus())
+                .canEdit(canEdit)
+                .images(images)
+                .build();
     }
 
     public void update(Long id, AuctionUpdateReqDto dto) {

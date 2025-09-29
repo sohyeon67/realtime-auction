@@ -5,13 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 판매자는 현재 로그인한 사람의 정보를 가져와 서비스 단에서 지정
+ * 경매 등록 요청 dto
  */
 @Getter
 @Setter
@@ -34,6 +33,6 @@ public class AuctionSaveReqDto {
     @NotNull(message = "종료 시간을 지정해주세요")
     private LocalDateTime endTime;
 
-    private List<AuctionFileReqDto> files;
+    private List<AuctionImageReqDto> files;
 
 }
