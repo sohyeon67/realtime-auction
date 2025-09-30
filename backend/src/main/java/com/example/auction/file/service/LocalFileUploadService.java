@@ -1,7 +1,9 @@
 package com.example.auction.file.service;
 
+import com.example.auction.exception.FileStorageException;
 import com.example.auction.file.domain.FileCategory;
 import com.example.auction.file.dto.UploadFile;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +20,7 @@ import java.util.UUID;
 /**
  * 서버 디스크에 바로 저장하는 방식
  */
+@Slf4j
 @Service
 public class LocalFileUploadService implements FileUploadService {
 
@@ -28,25 +31,30 @@ public class LocalFileUploadService implements FileUploadService {
     private String baseUrl;
 
     @Override
-    public UploadFile upload(MultipartFile file, FileCategory category) throws IOException {
+    public UploadFile upload(MultipartFile file, FileCategory category) {
         if (file.isEmpty()) {
             return null;
         }
 
-        String originalFilename = file.getOriginalFilename();
-        String savedFilename = createSavedFilename(originalFilename);
-        String relativePath = getRelativePath(savedFilename, category);
-        String fullPath = getFullPath(savedFilename, category);
+        try {
+            String originalFilename = file.getOriginalFilename();
+            String savedFilename = createSavedFilename(originalFilename);
+            String relativePath = getRelativePath(savedFilename, category);
+            String fullPath = getFullPath(savedFilename, category);
 
-        createDirectoryIfNotExists(category);
+            createDirectoryIfNotExists(category);
 
-        file.transferTo(new File(fullPath)); // 업로드
+            file.transferTo(new File(fullPath)); // 업로드
 
-        return new UploadFile(originalFilename, savedFilename, relativePath);
+            return new UploadFile(originalFilename, savedFilename, relativePath);
+        } catch (IOException e) {
+            throw new FileStorageException("파일 업로드 중 오류가 발생했습니다.", e);
+        }
+
     }
 
     @Override
-    public List<UploadFile> uploadAll(List<MultipartFile> files, FileCategory category) throws IOException {
+    public List<UploadFile> uploadAll(List<MultipartFile> files, FileCategory category) {
         List<UploadFile> savedFiles = new ArrayList<>();
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
@@ -58,10 +66,12 @@ public class LocalFileUploadService implements FileUploadService {
     }
 
     @Override
-    public void delete(String path) throws IOException {
-        Path filePath = Paths.get(path);
-        if (Files.exists(filePath)) {
-            Files.delete(filePath);
+    public void delete(String relativePath) {
+        try {
+            Path fullPath = Paths.get(fileDir, relativePath);
+            Files.deleteIfExists(fullPath);
+        } catch (IOException e) {
+            log.warn("파일 삭제 실패 : {}", relativePath, e);
         }
     }
 

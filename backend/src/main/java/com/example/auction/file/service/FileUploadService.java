@@ -9,9 +9,9 @@ import java.util.List;
 
 public interface FileUploadService {
 
-    UploadFile upload(MultipartFile file, FileCategory category) throws IOException;
-    List<UploadFile> uploadAll(List<MultipartFile> files, FileCategory category) throws IOException;
-    void delete(String key) throws IOException;
+    UploadFile upload(MultipartFile file, FileCategory category);
+    List<UploadFile> uploadAll(List<MultipartFile> files, FileCategory category);
+    void delete(String relativePath);
 
     /**
      * 프론트에서 접근할 수 있는 파일 경로 반환

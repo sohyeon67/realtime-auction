@@ -16,6 +16,7 @@ import com.example.auction.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,7 @@ public class AuctionService {
     private final CategoryRepository categoryRepository;
     private final AuctionImageRepository auctionImageRepository;
 
-    public Long create(AuctionSaveReqDto dto) throws IOException {
+    public Long create(AuctionSaveReqDto dto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         Member seller = memberRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
@@ -141,6 +142,15 @@ public class AuctionService {
         Auction auction = findAuctionOrThrow(id);
         checkOwner(auction);
         checkStatus(auction, AuctionStatus.READY, "시작 전 경매만 삭제할 수 있습니다.");
+
+        // 경매 이미지 삭제
+        List<AuctionImage> images = auction.getImages();
+        for (AuctionImage image : images) {
+            fileUploadService.delete(image.getFilePath()); // 파일 삭제
+            auctionImageRepository.delete(image); // DB 삭제
+        }
+
+        // 경매 삭제
         auctionRepository.delete(auction);
     }
 
@@ -165,8 +175,8 @@ public class AuctionService {
         }
     }
 
-    private static void checkStatus(Auction auction, AuctionStatus ready, String s) {
-        if (auction.getStatus() != ready) {
+    private static void checkStatus(Auction auction, AuctionStatus status, String s) {
+        if (auction.getStatus() != status) {
             throw new IllegalStateException(s);
         }
     }

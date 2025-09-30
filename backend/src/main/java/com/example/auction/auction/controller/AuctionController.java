@@ -38,12 +38,14 @@ public class AuctionController {
         return ResponseEntity.ok(new AuctionIdResDto(id));
     }
 
+    // READY 상태의 경매만 삭제 가능
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         auctionService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
+    // ONGOING 상태의 경매만 취소 가능
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Void> cancel(@PathVariable Long id) {
         auctionService.cancel(id);

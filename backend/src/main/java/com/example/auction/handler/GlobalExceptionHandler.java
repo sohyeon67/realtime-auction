@@ -1,6 +1,7 @@
 package com.example.auction.handler;
 
 import com.example.auction.exception.CookieNotFoundException;
+import com.example.auction.exception.FileStorageException;
 import com.example.auction.exception.InvalidTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +66,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleIllegalArgumentException(IllegalArgumentException e) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST) // 400
+                .body(Map.of("error", e.getMessage()));
+    }
+
+    // 파일 관련
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<?> handleFileStorageException(FileStorageException e) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR) // 500
                 .body(Map.of("error", e.getMessage()));
     }
 
