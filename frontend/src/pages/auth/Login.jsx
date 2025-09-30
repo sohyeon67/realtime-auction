@@ -1,12 +1,18 @@
 import { Box, Button, Divider, Stack, TextField, Typography, Link } from "@mui/material";
 import { useState } from "react";
 import api from "../../api/api";
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 
 
 const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL;
 
 export default function Login() {
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // 로그인 직전 경로
+  const from = location.state?.from?.pathname || '/';
 
   // 자체 로그인
   const [email, setEmail] = useState("");
@@ -32,7 +38,9 @@ export default function Login() {
       localStorage.setItem("refreshToken", res.data.refreshToken);
 
       // 로그인 성공 후 페이지 이동
-      window.location.href = "/";
+      // window.location.href = "/";
+      navigate(from, { replace: true });
+
     } catch (err) {
       setError("이메일 또는 비밀번호가 잘못되었습니다.");
     }

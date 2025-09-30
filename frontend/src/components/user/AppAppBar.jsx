@@ -16,9 +16,17 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from '@mui/icons-material/Search';
 import { InputBase, Paper } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 export default function AppAppBar() {
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate('/auth/login', { state: { from: location } });
+  }
+
   const [open, setOpen] = React.useState(false);
 
   const toggleDrawer = (newOpen) => () => {
@@ -91,7 +99,7 @@ export default function AppAppBar() {
             <Button color="primary" variant="contained" size="small" component={Link} to="/user/auctions/register">
               물품등록
             </Button>
-            <Button color="primary" variant="contained" size="small">
+            <Button color="primary" variant="contained" size="small" onClick={handleLogin}>
               로그인
             </Button>
             <Button color="primary" variant="contained" size="small">
@@ -139,7 +147,7 @@ export default function AppAppBar() {
                   </Button>
                 </MenuItem>
                 <MenuItem>
-                  <Button color="primary" variant="outlined" fullWidth>
+                  <Button color="primary" variant="outlined" fullWidth onClick={handleLogin}>
                     로그인
                   </Button>
                 </MenuItem>
