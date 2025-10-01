@@ -12,13 +12,14 @@ import SocialLoginSuccess from './pages/auth/SocialLoginSuccess';
 // User 페이지
 import Home from './pages/user/Home';
 import AuctionList from './pages/user/AuctionList';
+import AuctionRegister from './pages/user/AuctionRegister';
+import AuctionDetails from './pages/user/AuctionDetails';
+import AuctionEdit from './pages/user/AuctionEdit';
 
 // Admin 페이지
 import Dashboard from './pages/admin/Dashboard';
 import Users from './pages/admin/Users';
 import Categories from './pages/admin/Categories';
-import AuctionRegister from './pages/user/AuctionRegister';
-import AuctionDetails from './pages/user/AuctionDetails';
 
 
 function App() {
@@ -39,7 +40,7 @@ function App() {
             <Route path="auctions" element={<AuctionList />} />
             <Route path="auctions/register" element={<AuctionRegister />} />
             <Route path="auctions/:auctionId" element={<AuctionDetails />} />
-            <Route path="auctions/:auctionId/edit" element={<AuctionRegister />} />
+            <Route path="auctions/:auctionId/edit" element={<AuctionEdit />} />
           </Route>
 
           <Route path="/admin/*" element={<AdminLayout />}>

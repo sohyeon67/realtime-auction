@@ -138,7 +138,6 @@ function AuctionDetails() {
           <Typography variant="h6">종료시간: {new Date(auction.endTime).toLocaleString()}</Typography>
 
           <Typography variant="body1">카테고리: {auction.categoryName}</Typography>
-          <Typography variant="body1">판매자: {auction.sellerId} {auction.sellerNickname}</Typography>
 
         </Grid>
       </Grid>
