@@ -8,7 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Setter
 public class AuctionImageReqDto {
 
-    private MultipartFile file;
+    private Long id; // 기존 이미지의 경우 값이 있음
+    private MultipartFile file; // 새로 추가할 때 값이 있음
     private Boolean isMain;
     private Integer sortOrder;
 }

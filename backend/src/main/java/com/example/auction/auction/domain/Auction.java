@@ -31,7 +31,7 @@ public class Auction extends BaseTime {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -70,14 +70,44 @@ public class Auction extends BaseTime {
         this.category = category;
     }
 
-    public void updateEndTIme(LocalDateTime endTime) {
-        if (this.status != AuctionStatus.READY) {
-            throw new IllegalStateException("경매가 시작된 후에는 종료 시간을 변경할 수 없습니다.");
-        }
-        this.endTime = endTime;
-    }
-
     public void updateStatus(AuctionStatus status) {
         this.status = status;
     }
+
+    public void updateStartPrice(Integer startPrice) {
+        this.startPrice = startPrice;
+    }
+
+    public void updateStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void updateEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
+    }
+
+    /// 비즈니스
+    public boolean isOngoing() {
+        LocalDateTime now = LocalDateTime.now();
+        return now.isAfter(startTime) && now.isBefore(endTime);
+    }
+
+    public boolean isBeforeStart() {
+        return LocalDateTime.now().isBefore(startTime);
+    }
+
+    public void cancel() {
+        if (!isOngoing()) {
+            throw new IllegalStateException("진행 중인 경매만 취소할 수 있습니다.");
+        }
+        this.status = AuctionStatus.CANCELLED;
+    }
+
+    public void checkModifiable() {
+        if (!isBeforeStart()) {
+            throw new IllegalStateException("경매 시작 후에는 수정하거나 삭제할 수 없습니다.");
+        }
+    }
+
+
 }

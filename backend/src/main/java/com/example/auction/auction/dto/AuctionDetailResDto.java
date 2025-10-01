@@ -18,11 +18,11 @@ public class AuctionDetailResDto {
 
     private Long auctionId;
     private String title;
-    private String categoryName;
-    private String description;
 
-    private Long sellerId;
-    private String sellerNickname;
+    private Long categoryId;
+    private String categoryName;
+
+    private String description;
 
     private int startPrice;
     private int currentPrice;

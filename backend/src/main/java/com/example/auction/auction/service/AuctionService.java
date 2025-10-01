@@ -16,13 +16,11 @@ import com.example.auction.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -61,9 +59,8 @@ public class AuctionService {
 
         // 이미지 업로드
         for (AuctionImageReqDto fileDto : dto.getFiles()) {
-            MultipartFile file = fileDto.getFile();
-
             // 업로드
+            MultipartFile file = fileDto.getFile();
             UploadFile upload = fileUploadService.upload(file, FileCategory.AUCTION);
 
             // 엔티티 생성
@@ -88,6 +85,7 @@ public class AuctionService {
         // 이미지 URL 변환
         List<AuctionImageResDto> images = auction.getImages().stream()
                 .map(img -> AuctionImageResDto.builder()
+                        .id(img.getId())
                         .url(fileUploadService.getFileUrl(img.getFilePath())) // 상대경로 -> URL
                         .sortOrder(img.getSortOrder())
                         .isMain(img.isMain())
@@ -100,10 +98,9 @@ public class AuctionService {
         return AuctionDetailResDto.builder()
                 .auctionId(auction.getId())
                 .title(auction.getTitle())
+                .categoryId(auction.getCategory().getId())
                 .categoryName(auction.getCategory().getName())
                 .description(auction.getDescription())
-                .sellerId(auction.getSeller().getId())
-                .sellerNickname(auction.getSeller().getNickname())
                 .startPrice(auction.getStartPrice())
                 .currentPrice(auction.getCurrentPrice())
                 .startTime(auction.getStartTime())
@@ -121,27 +118,77 @@ public class AuctionService {
         // 본인만 수정 가능
         checkOwner(auction);
 
+        // 기존 시작시간을 가져와 경매 시작 전인지 체크
+        auction.checkModifiable();
+
+        // 필드 수정
         if (dto.getTitle() != null) {
             auction.updateTitle(dto.getTitle());
-        }
-        if (dto.getDescription() != null) {
-            auction.updateDescription(dto.getDescription());
         }
         if (dto.getCategoryId() != null) {
             Category category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new IllegalArgumentException("카테고리를 찾을 수 없습니다."));
             auction.updateCategory(category);
         }
+        if (dto.getDescription() != null) {
+            auction.updateDescription(dto.getDescription());
+        }
+        if (dto.getStartPrice() != null) {
+            auction.updateStartPrice(dto.getStartPrice());
+        }
+        if (dto.getStartTime() != null) {
+            auction.updateStartTime(dto.getStartTime());
+        }
         if (dto.getEndTime() != null) {
-            auction.updateEndTIme(dto.getEndTime());
+            auction.updateEndTime(dto.getEndTime());
+        }
+
+
+        // 기존 이미지 파일 & 목록에 없으면 삭제
+        for (AuctionImage image : auction.getImages()) {
+            // existFiles에서 동일한 id 찾기
+            AuctionImageReqDto matchedDto = dto.getExistFiles().stream()
+                    .filter(f -> f.getId() != null && f.getId().equals(image.getId()))
+                    .findFirst()
+                    .orElse(null);
+
+            if (matchedDto == null) {
+                // 존재하지 않으면 삭제
+                fileUploadService.delete(image.getFilePath());
+                auctionImageRepository.delete(image);
+            } else {
+                // 존재하면 sortOrder / isMain 갱신
+                image.updateSortOrder(matchedDto.getSortOrder());
+                image.updateIsMain(matchedDto.getIsMain());
+            }
+        }
+
+
+        // 새 이미지 업로드 처리
+        for (AuctionImageReqDto fileDto : dto.getNewFiles()) {
+            // 업로드
+            MultipartFile file = fileDto.getFile();
+            UploadFile upload = fileUploadService.upload(file, FileCategory.AUCTION);
+
+            // 엔티티 생성
+            AuctionImage auctionImage = AuctionImage.builder()
+                    .auction(auction)
+                    .originalName(upload.getOriginalName())
+                    .savedName(upload.getSavedName())
+                    .filePath(upload.getFilePath())
+                    .sortOrder(fileDto.getSortOrder())
+                    .isMain(fileDto.getIsMain())
+                    .build();
+            auctionImageRepository.save(auctionImage);
         }
 
     }
 
+    // 경매 시작 전 삭제
     public void delete(Long id) {
         Auction auction = findAuctionOrThrow(id);
         checkOwner(auction);
-        checkStatus(auction, AuctionStatus.READY, "시작 전 경매만 삭제할 수 있습니다.");
+        auction.checkModifiable();
 
         // 경매 이미지 삭제
         List<AuctionImage> images = auction.getImages();
@@ -154,11 +201,11 @@ public class AuctionService {
         auctionRepository.delete(auction);
     }
 
+    // 경매 시작 이후 취소
     public void cancel(Long id) {
         Auction auction = findAuctionOrThrow(id);
         checkOwner(auction);
-        checkStatus(auction, AuctionStatus.ONGOING, "진행 중인 경매만 취소할 수 있습니다.");
-        auction.updateStatus(AuctionStatus.CANCELLED);
+        auction.cancel();
     }
 
 
@@ -175,9 +222,4 @@ public class AuctionService {
         }
     }
 
-    private static void checkStatus(Auction auction, AuctionStatus status, String s) {
-        if (auction.getStatus() != status) {
-            throw new IllegalStateException(s);
-        }
-    }
 }

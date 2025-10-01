@@ -44,4 +44,12 @@ public class AuctionImage {
     @CreatedDate
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public void updateSortOrder(Integer sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
+    public void updateIsMain(Boolean isMain) {
+        this.isMain = isMain;
+    }
 }

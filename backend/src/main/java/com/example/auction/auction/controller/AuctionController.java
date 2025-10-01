@@ -1,7 +1,7 @@
 package com.example.auction.auction.controller;
 
-import com.example.auction.auction.dto.AuctionIdResDto;
 import com.example.auction.auction.dto.AuctionDetailResDto;
+import com.example.auction.auction.dto.AuctionIdResDto;
 import com.example.auction.auction.dto.AuctionSaveReqDto;
 import com.example.auction.auction.dto.AuctionUpdateReqDto;
 import com.example.auction.auction.service.AuctionService;
@@ -11,8 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auctions")
@@ -21,7 +19,7 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     @PostMapping
-    public ResponseEntity<AuctionIdResDto> create(@Valid AuctionSaveReqDto dto) throws IOException {
+    public ResponseEntity<AuctionIdResDto> create(@Valid @ModelAttribute AuctionSaveReqDto dto) {
         Long id = auctionService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(new AuctionIdResDto(id));
     }
