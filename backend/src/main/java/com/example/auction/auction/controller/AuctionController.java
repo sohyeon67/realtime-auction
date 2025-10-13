@@ -1,12 +1,12 @@
 package com.example.auction.auction.controller;
 
-import com.example.auction.auction.dto.AuctionDetailResDto;
-import com.example.auction.auction.dto.AuctionIdResDto;
-import com.example.auction.auction.dto.AuctionSaveReqDto;
-import com.example.auction.auction.dto.AuctionUpdateReqDto;
+import com.example.auction.auction.dto.*;
 import com.example.auction.auction.service.AuctionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -50,8 +50,11 @@ public class AuctionController {
         return ResponseEntity.ok().build();
     }
 
-//    @GetMapping
-//    public ResponseEntity<?> getAll() {
-//        return ResponseEntity.ok("temp");
-//    }
+    @GetMapping
+    public ResponseEntity<Page<AuctionListResDto>> getAll(
+            AuctionSearchCond cond,
+            @PageableDefault(size = 12) Pageable pageable
+    ) {
+        return ResponseEntity.ok(auctionService.getAuctions(cond, pageable));
+    }
 }

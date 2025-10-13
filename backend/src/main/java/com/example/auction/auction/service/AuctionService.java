@@ -5,6 +5,7 @@ import com.example.auction.auction.domain.AuctionImage;
 import com.example.auction.auction.domain.AuctionStatus;
 import com.example.auction.auction.dto.*;
 import com.example.auction.auction.repository.AuctionImageRepository;
+import com.example.auction.auction.repository.AuctionQueryRepository;
 import com.example.auction.auction.repository.AuctionRepository;
 import com.example.auction.category.domain.Category;
 import com.example.auction.category.repository.CategoryRepository;
@@ -14,6 +15,8 @@ import com.example.auction.file.service.FileUploadService;
 import com.example.auction.member.domain.Member;
 import com.example.auction.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -34,6 +37,7 @@ public class AuctionService {
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final AuctionImageRepository auctionImageRepository;
+    private final AuctionQueryRepository auctionQueryRepository;
 
     public Long create(AuctionSaveReqDto dto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -208,6 +212,11 @@ public class AuctionService {
         auction.cancel();
     }
 
+    // 경매 목록 조회
+    public Page<AuctionListResDto> getAuctions(AuctionSearchCond cond, Pageable pageable) {
+        return auctionQueryRepository.auctionList(cond, pageable);
+    }
+
 
     // 편의 메서드
     private Auction findAuctionOrThrow(Long id) {
@@ -221,5 +230,6 @@ public class AuctionService {
             throw new AccessDeniedException("본인만 수행할 수 있습니다.");
         }
     }
+
 
 }
