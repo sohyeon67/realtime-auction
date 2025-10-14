@@ -2,7 +2,9 @@ package com.example.auction.auction.repository;
 
 import com.example.auction.auction.dto.AuctionListResDto;
 import com.example.auction.auction.dto.AuctionSearchCond;
+import com.example.auction.auction.dto.AuctionSort;
 import com.example.auction.auction.dto.QAuctionListResDto;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -28,7 +30,8 @@ public class AuctionQueryRepository {
         this.queryFactory = new JPAQueryFactory(em);
     }
 
-    public Page<AuctionListResDto> auctionList(AuctionSearchCond cond, Pageable pageable) {
+    public Page<AuctionListResDto> auctionList(AuctionSearchCond cond, Pageable pageable, AuctionSort sort) {
+
         List<AuctionListResDto> content = queryFactory
                 .select(new QAuctionListResDto(
                         auction.id,
@@ -46,11 +49,13 @@ public class AuctionQueryRepository {
                 .leftJoin(bid).on(bid.auction.eq(auction))
                 .where(
                         keywordContains(cond.getKeyword()),
+                        sellerNicknameContains(cond.getSellerName()),
                         inCategoryIds(cond.getCategoryIds()),
                         minPriceGoe(cond.getMinPrice()),
                         maxPriceLoe(cond.getMaxPrice())
                 )
                 .groupBy(auction.id, auctionImage.filePath, auction.title, auction.currentPrice, auction.endTime, auction.status, member.nickname)
+                .orderBy(getOrderSpecifier(sort))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
@@ -58,8 +63,10 @@ public class AuctionQueryRepository {
         Long total = queryFactory
                 .select(auction.count())
                 .from(auction)
+                .join(auction.seller, member)
                 .where(
                         keywordContains(cond.getKeyword()),
+                        sellerNicknameContains(cond.getSellerName()),
                         inCategoryIds(cond.getCategoryIds()),
                         minPriceGoe(cond.getMinPrice()),
                         maxPriceLoe(cond.getMaxPrice())
@@ -74,6 +81,10 @@ public class AuctionQueryRepository {
         return StringUtils.hasText(keyword) ? auction.title.containsIgnoreCase(keyword) : null;
     }
 
+    private BooleanExpression sellerNicknameContains(String nickname) {
+        return StringUtils.hasText(nickname) ? member.nickname.containsIgnoreCase(nickname) : null;
+    }
+
     private BooleanExpression inCategoryIds(List<Long> categoryIds) {
         return (categoryIds != null && !categoryIds.isEmpty()) ? auction.category.id.in(categoryIds) : null;
     }
@@ -86,6 +97,22 @@ public class AuctionQueryRepository {
         return maxPrice != null ? auction.currentPrice.loe(maxPrice) : null;
     }
 
-
+    // 정렬
+    private OrderSpecifier<?> getOrderSpecifier(AuctionSort sort) {
+        switch (sort) {
+            case POPULARITY:
+                return bid.count().desc();
+            case ENDING_SOON: // 나중에 보충 필요
+                return auction.endTime.asc();
+            case RECENT:
+                return auction.createdAt.desc();
+            case PRICE_DESC:
+                return auction.currentPrice.desc();
+            case PRICE_ASC:
+                return auction.currentPrice.asc();
+            default:
+                return bid.count().desc();
+        }
+    }
 
 }

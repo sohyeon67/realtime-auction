@@ -53,8 +53,9 @@ public class AuctionController {
     @GetMapping
     public ResponseEntity<Page<AuctionListResDto>> getAll(
             AuctionSearchCond cond,
-            @PageableDefault(size = 12) Pageable pageable
+            @PageableDefault(size = 12) Pageable pageable,
+            @RequestParam(required = false, defaultValue = "POPULARITY") AuctionSort sort
     ) {
-        return ResponseEntity.ok(auctionService.getAuctions(cond, pageable));
+        return ResponseEntity.ok(auctionService.getAuctions(cond, pageable, sort));
     }
 }

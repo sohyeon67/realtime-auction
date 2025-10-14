@@ -213,8 +213,14 @@ public class AuctionService {
     }
 
     // 경매 목록 조회
-    public Page<AuctionListResDto> getAuctions(AuctionSearchCond cond, Pageable pageable) {
-        return auctionQueryRepository.auctionList(cond, pageable);
+    public Page<AuctionListResDto> getAuctions(AuctionSearchCond cond, Pageable pageable, AuctionSort sort) {
+        return auctionQueryRepository.auctionList(cond, pageable, sort)
+                .map(auction -> {
+                    if (auction.getMainImageUrl() != null) {
+                        auction.setMainImageUrl(fileUploadService.getFileUrl(auction.getMainImageUrl()));
+                    }
+                    return auction;
+                });
     }
 
 
