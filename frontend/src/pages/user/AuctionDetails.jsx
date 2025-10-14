@@ -1,6 +1,6 @@
 import { Box, Container, Grid, Typography, Skeleton, Button, Stack, Divider } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/api';
 import AuctionTimer from '../../components/user/auction/AuctionTimer';
 import AuctionStatus from '../../components/user/auction/AuctionStatus';
@@ -8,6 +8,7 @@ import AuctionStatus from '../../components/user/auction/AuctionStatus';
 function AuctionDetails() {
   const { auctionId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [auction, setAuction] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -86,7 +87,7 @@ function AuctionDetails() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() => navigate('/user/auctions')}
+          onClick={() => navigate(`/user/auctions${location.search}`)}
         >
           목록
         </Button>
