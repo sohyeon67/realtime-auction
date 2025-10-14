@@ -5,10 +5,12 @@ import { RichTreeView, SimpleTreeView, TreeItem } from '@mui/x-tree-view';
 import api from '../../api/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { NumericFormat } from 'react-number-format';
 
 export default function AuctionList() {
   const navigate = useNavigate();
 
+  // 브라우저 URL 쿼리스트링을 관리하기 위함
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [categories, setCategories] = useState([]);
@@ -17,15 +19,18 @@ export default function AuctionList() {
   const [totalPages, setTotalPages] = useState(1);
 
   // 검색 조건
-  const [page, setPage] = useState(0);
-  const [size, setSize] = useState(12);
-  const [sort, setSort] = useState("POPULARITY");
+  const page = parseInt(searchParams.get("page")) || 1;
+  const size = parseInt(searchParams.get("size")) || 12;
+  const sort = searchParams.get("sort") || "POPULARITY";
 
-  const [keyword, setKeyword] = useState("");
-  const [categoryIds, setCategoryIds] = useState([]);
-  const [sellerName, setSellerName] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+  // 최초 렌더링 시 URL에 있는 값으로 초기화하기 위해서
+  const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
+  const [categoryIds, setCategoryIds] = useState(searchParams.getAll("categoryIds") || []);
+  const [sellerName, setSellerName] = useState(searchParams.get("sellerName") || "");
+  const [minPrice, setMinPrice] = useState(searchParams.get("minPrice") || "");
+  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
+
+  const [errors, setErrors] = useState({ minPrice: "", maxPrice: "" });
 
   // 카테고리 불러오기
   useEffect(() => {
@@ -38,17 +43,20 @@ export default function AuctionList() {
 
   // 경매 목록 불러오기
   const getAuctions = () => {
+    // 서버에 보낼 쿼리스트링
     const params = new URLSearchParams();
 
-    params.append("page", page);
+    // 실제 페이지는 -1 해줘야 함
+    params.append("page", page - 1);
     params.append("size", size);
     params.append("sort", sort);
 
-    if (keyword) params.append("keyword", keyword);
-    if (categoryIds.length > 0) categoryIds.forEach(id => params.append("categoryIds", id));
-    if (sellerName) params.append("sellerName", sellerName);
-    if (minPrice) params.append("minPrice", minPrice);
-    if (maxPrice) params.append("maxPrice", maxPrice);
+    // 검색 필터 값이 있는 것들만 세팅
+    if (categoryIds?.length > 0) categoryIds.forEach(id => params.append("categoryIds", id));
+    if (keyword?.trim()) params.append("keyword", keyword.trim());
+    if (sellerName?.trim()) params.append("sellerName", sellerName.trim());
+    if (minPrice) params.append("minPrice", parseInt(minPrice.replace(/,/g, ''), 10));
+    if (maxPrice) params.append("maxPrice", parseInt(maxPrice.replace(/,/g, ''), 10));
 
     api.get(`/api/auctions?${params.toString()}`)
       .then(res => {
@@ -59,20 +67,45 @@ export default function AuctionList() {
       .catch(() => alert("경매 데이터 불러오기 실패"));
   };
 
+  // searchParams가 바뀔 때마다 경매 데이터 가져오기
   useEffect(() => {
     getAuctions();
-  }, [page]);
+  }, [searchParams]);
 
-  // 정렬 변경시 첫 페이지부터
-  useEffect(() => {
-    setPage(0);
-    getAuctions();
-  }, [sort]);
 
-  // 검색 시 페이지 0으로 초기화
+  // 검색 버튼 클릭시
   const handleSearch = () => {
-    setPage(0);
-    getAuctions();
+    // 1. 가격 검사
+    const min = minPrice ? parseInt(minPrice.replace(/,/g, ''), 10) : null;
+    const max = maxPrice ? parseInt(maxPrice.replace(/,/g, ''), 10) : null;
+
+    const newErrors = { minPrice: "", maxPrice: "" };
+
+    if (min !== null && min < 1000) newErrors.minPrice = "최소가격은 1,000원 이상이어야 합니다.";
+    if (max !== null && max < 1000) newErrors.maxPrice = "최대가격은 1,000원 이상이어야 합니다.";
+    if (min !== null && max !== null && max < min) newErrors.maxPrice = "최대가격은 최소가격 이상이어야 합니다.";
+
+    setErrors(newErrors);
+
+    if (newErrors.minPrice || newErrors.maxPrice) return;
+
+    // 2. url 업데이트
+    // 유지되는 값들
+    const params = {
+      size: searchParams.get("size") || 12,
+      sort: searchParams.get("sort") || "POPULARITY",
+      page: 1,
+    };
+
+    // 값이 있을 때만 url에 붙인다.
+    if (categoryIds?.length > 0) params.categoryIds = categoryIds;
+    if (keyword?.trim()) params.keyword = keyword.trim();
+    if (sellerName?.trim()) params.sellerName = sellerName.trim();
+    if (minPrice) params.minPrice = min;
+    if (maxPrice) params.maxPrice = max;
+
+    // 브라우저 URL 쿼리파라미터 세팅
+    setSearchParams(params);
   };
 
   // RichTreeView에 맞는 데이터로 변환
@@ -98,7 +131,7 @@ export default function AuctionList() {
         gap: { xs: 2, sm: 2 },
       }}
     >
-      
+
       <Typography
         component="h2"
         variant="h4"
@@ -117,28 +150,49 @@ export default function AuctionList() {
         }}
       >
         <Typography variant="subtitle1" >
-          총 <strong style={{ color: 'orangered'}}>{totalElements?.toLocaleString() || 0}</strong>개
+          총 <strong style={{ color: 'orangered' }}>{totalElements?.toLocaleString() || 0}</strong>개
         </Typography>
 
-        <FormControl size="small">
-          <InputLabel id="sort-select-label">정렬</InputLabel>
-          <Select
-            labelId="sort-select-label"
-            id="sort-select"
-            label="Sort"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            <MenuItem value="POPULARITY">인기경매순</MenuItem>
-            <MenuItem value="ENDING_SOON">마감임박순</MenuItem>
-            <MenuItem value="RECENT">신규경매순</MenuItem>
-            <MenuItem value="PRICE_DESC">높은가격순</MenuItem>
-            <MenuItem value="PRICE_ASC">낮은가격순</MenuItem>
-          </Select>
-        </FormControl>
+        <Stack direction="row" spacing={2}>
+
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel id="size-select-label">페이지당 항목</InputLabel>
+            <Select
+              labelId="size-select-label"
+              id="size-select"
+              label="페이지당 항목"
+              value={size}
+              onChange={(e) => setSearchParams({ ...Object.fromEntries(searchParams), size: e.target.value, page: 1 })}
+            >
+              <MenuItem value={12}>12</MenuItem>
+              <MenuItem value={24}>24</MenuItem>
+              <MenuItem value={36}>36</MenuItem>
+              <MenuItem value={48}>48</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small">
+            <InputLabel id="sort-select-label">정렬</InputLabel>
+            <Select
+              labelId="sort-select-label"
+              id="sort-select"
+              label="정렬"
+              value={sort}
+              onChange={(e) => setSearchParams({ ...Object.fromEntries(searchParams), page: 1, sort: e.target.value })}
+            >
+              <MenuItem value="POPULARITY">인기경매순</MenuItem>
+              <MenuItem value="ENDING_SOON">마감임박순</MenuItem>
+              <MenuItem value="RECENT">신규경매순</MenuItem>
+              <MenuItem value="PRICE_DESC">높은가격순</MenuItem>
+              <MenuItem value="PRICE_ASC">낮은가격순</MenuItem>
+            </Select>
+
+          </FormControl>
+
+        </Stack>
       </Box>
 
-      <Divider/>
+      <Divider />
 
       <Box sx={{ width: '100%', flexGrow: 1 }}>
 
@@ -157,6 +211,7 @@ export default function AuctionList() {
                 <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
                   <Typography variant="h6" gutterBottom>검색 필터</Typography>
 
+                  {/* 초기화 버튼 */}
                   <IconButton
                     size="small"
                     aria-label="refresh"
@@ -166,7 +221,6 @@ export default function AuctionList() {
                       setMinPrice("");
                       setMaxPrice("");
                       setCategoryIds([]);
-                      setPage(0);
                     }}
                   >
                     <RefreshIcon />
@@ -217,7 +271,8 @@ export default function AuctionList() {
 
                 <Typography variant="subtitle1" gutterBottom>가격</Typography>
 
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   label="최소가격"
                   variant="outlined"
                   size="small"
@@ -225,8 +280,13 @@ export default function AuctionList() {
                   margin="dense"
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
+                  placeholder="1,000"
+                  thousandSeparator
+                  error={!!errors.minPrice}
+                  helperText={errors.minPrice}
                 />
-                <TextField
+                <NumericFormat
+                  customInput={TextField}
                   label="최대가격"
                   variant="outlined"
                   size="small"
@@ -234,7 +294,12 @@ export default function AuctionList() {
                   margin="dense"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
+                  placeholder="10,000,000"
+                  thousandSeparator
+                  error={!!errors.maxPrice}
+                  helperText={errors.maxPrice}
                 />
+
 
                 <Button
                   variant="contained"
@@ -261,7 +326,7 @@ export default function AuctionList() {
                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={auction.auctionId}>
                   <Card>
                     <CardActionArea
-                      onClick={() => navigate(`/user/auctions/${auction.auctionId}`)}
+                      onClick={() => navigate(`/user/auctions/${auction.auctionId}?${searchParams.toString()}`)} // 상세페이지에 검색 조건 전달
                     >
 
                       <CardMedia
@@ -308,8 +373,11 @@ export default function AuctionList() {
             <Stack spacing={2} sx={{ mt: 4, alignItems: 'center' }}>
               <Pagination
                 count={totalPages}
-                page={page + 1}
-                onChange={(e, value) => setPage(value - 1)}
+                page={page}
+                onChange={(e, value) => {
+                  setSearchParams({ ...Object.fromEntries(searchParams), page: value });
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
                 showFirstButton
                 showLastButton
               />
