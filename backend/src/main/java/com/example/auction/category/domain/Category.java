@@ -2,21 +2,16 @@ package com.example.auction.category.domain;
 
 import com.example.auction.util.BaseTime;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @Getter
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@NoArgsConstructor
+@Builder
 public class Category extends BaseTime {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

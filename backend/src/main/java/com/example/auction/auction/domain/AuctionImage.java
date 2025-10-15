@@ -1,22 +1,15 @@
 package com.example.auction.auction.domain;
 
+import com.example.auction.util.BaseCreated;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-public class AuctionImage {
+public class AuctionImage extends BaseCreated {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auction_image_id")
@@ -40,10 +33,6 @@ public class AuctionImage {
 
     @Column(nullable = false)
     private int sortOrder;
-
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
 
     public void updateSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;

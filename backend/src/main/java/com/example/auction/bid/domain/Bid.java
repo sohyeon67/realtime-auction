@@ -1,18 +1,37 @@
 package com.example.auction.bid.domain;
 
 import com.example.auction.auction.domain.Auction;
+import com.example.auction.member.domain.Member;
+import com.example.auction.util.BaseCreated;
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
-public class Bid {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class Bid extends BaseCreated {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "bid_id")
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "auction_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "auction_id", nullable = false)
     private Auction auction;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bidder_id", nullable = false)
+    private Member member;
+
+    @Column(nullable = false)
+    private Long bidPrice;
+
+    @Column(nullable = false)
+    private LocalDateTime bidTime;
+
 
 }

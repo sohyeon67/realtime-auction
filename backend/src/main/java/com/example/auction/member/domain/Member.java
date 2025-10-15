@@ -1,20 +1,15 @@
 package com.example.auction.member.domain;
 
-import com.example.auction.util.BaseTime;
 import com.example.auction.member.dto.MemberUpdateReqDto;
+import com.example.auction.util.BaseTime;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import lombok.*;
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Member extends BaseTime {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

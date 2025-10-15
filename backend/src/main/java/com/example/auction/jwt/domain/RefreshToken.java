@@ -1,22 +1,15 @@
 package com.example.auction.jwt.domain;
 
+import com.example.auction.util.BaseCreated;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
+import lombok.*;
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @Getter
-@Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class RefreshToken {
+@Builder
+public class RefreshToken extends BaseCreated {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "refresh_token_id")
@@ -28,7 +21,4 @@ public class RefreshToken {
     @Column(nullable = false, length = 512)
     private String refresh;
 
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
 }
