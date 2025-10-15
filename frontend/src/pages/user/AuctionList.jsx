@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { Container, Box, Grid, Typography, Divider, Card, CardHeader, CardContent, CardMedia, CardActionArea, Stack, Pagination, TextField, Button, IconButton, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import { RichTreeView, SimpleTreeView, TreeItem } from '@mui/x-tree-view';
+import { Container, Box, Grid, Typography, Divider, Card, CardContent, CardMedia, CardActionArea, Stack, Pagination, TextField, Button, IconButton, Select, MenuItem, FormControl, InputLabel, CardHeader } from '@mui/material';
+import { RichTreeView } from '@mui/x-tree-view';
 import api from '../../api/api';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { NumericFormat } from 'react-number-format';
+import AuctionStatus from '../../components/user/auction/AuctionStatus';
+import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
 
 export default function AuctionList() {
   const navigate = useNavigate();
@@ -118,6 +120,23 @@ export default function AuctionList() {
   );
 
   const treeItems = renderTree(categories);
+
+  const formatRemainingTime = (endTime) => {
+    const now = new Date();
+    const end = new Date(endTime);
+    const diffMs = end - now;
+
+    if (diffMs <= 0) return "마감";
+
+    const diffSec = Math.floor(diffMs / 1000);
+    const days = Math.floor(diffSec / (24 * 3600));
+    const hours = Math.floor((diffSec % (24 * 3600)) / 3600);
+    const minutes = Math.floor((diffSec % 3600) / 60);
+
+    if (days > 0) return `${days}일 ${hours}시간`;
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${hours}시간 ${pad(minutes)}분`;
+  };
 
 
   return (
@@ -349,16 +368,33 @@ export default function AuctionList() {
                           {auction.title}
                         </Typography>
 
-                        <Typography variant="body2" color="text.secondary">
-                          판매자: {auction.sellerNickname}
+                        <Divider sx={{ my: 1 }} />
+
+                        <AuctionStatus status={auction.status} size="small" />
+
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 'bold' }}
+                        >
+                          {auction.currentPrice?.toLocaleString()} 원
                         </Typography>
 
-                        <Typography variant="body2" color="text.secondary">
-                          현재가: {auction.currentPrice?.toLocaleString()}원
-                        </Typography>
+
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <Typography variant="body2" color="text.secondary">
+                            입찰 {auction.bidCount} 회
+                          </Typography>
+
+                          <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
+                          
+                          <AccessAlarmIcon fontSize="small" />
+                          <Typography variant="body2" color="text.secondary">
+                            {formatRemainingTime(auction.endTime)}
+                          </Typography>
+                        </Box>
 
                         <Typography variant="body2" color="text.secondary">
-                          입찰 수: {auction.bidCount}
+                          판매자 : {auction.sellerNickname}
                         </Typography>
 
                       </CardContent>

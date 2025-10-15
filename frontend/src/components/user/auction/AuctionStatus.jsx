@@ -1,6 +1,6 @@
 import { Chip, Stack } from '@mui/material'
 
-function AuctionStatus({ status }) {
+function AuctionStatus({ status, size = "medium" }) {
 
   const textMap = {
     READY: "시작전",
@@ -22,6 +22,7 @@ function AuctionStatus({ status }) {
     <Stack direction="row" spacing={1}>
       <Chip
         label={textMap[status]}
+        size={size}
         sx={{
           backgroundColor: colorMap[status],
           color: 'white',
