@@ -27,7 +27,7 @@ public class AuctionSaveReqDto {
     @NotNull(message = "시작 가격을 입력해주세요")
     @Min(value = 1000, message = "시작 가격은 1000원 이상이어야 합니다")
     @Max(value = 10_000_000, message = "시작 가격은 1000만원 이하여아 합니다")
-    private Integer startPrice;
+    private Long startPrice;
 
     @NotNull(message = "시작 시간을 지정해주세요")
     private LocalDateTime startTime;

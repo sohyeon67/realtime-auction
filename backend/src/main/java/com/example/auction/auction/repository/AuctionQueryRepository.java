@@ -89,11 +89,11 @@ public class AuctionQueryRepository {
         return (categoryIds != null && !categoryIds.isEmpty()) ? auction.category.id.in(categoryIds) : null;
     }
 
-    private BooleanExpression minPriceGoe(Integer minPrice) {
+    private BooleanExpression minPriceGoe(Long minPrice) {
         return minPrice != null ? auction.currentPrice.goe(minPrice) : null;
     }
 
-    private BooleanExpression maxPriceLoe(Integer maxPrice) {
+    private BooleanExpression maxPriceLoe(Long maxPrice) {
         return maxPrice != null ? auction.currentPrice.loe(maxPrice) : null;
     }
 

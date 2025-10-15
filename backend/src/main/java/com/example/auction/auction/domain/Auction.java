@@ -36,10 +36,10 @@ public class Auction extends BaseTime {
     private Member seller;
 
     @Column(nullable = false)
-    private int startPrice;
+    private Long startPrice;
 
     @Column(nullable = false)
-    private int currentPrice;
+    private Long currentPrice;
 
     @Column(nullable = false)
     private LocalDateTime startTime;
@@ -71,7 +71,7 @@ public class Auction extends BaseTime {
         this.status = status;
     }
 
-    public void updateStartPrice(Integer startPrice) {
+    public void updateStartPrice(Long startPrice) {
         this.startPrice = startPrice;
     }
 

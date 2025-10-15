@@ -24,8 +24,8 @@ public class AuctionDetailResDto {
 
     private String description;
 
-    private int startPrice;
-    private int currentPrice;
+    private Long startPrice;
+    private Long currentPrice;
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;

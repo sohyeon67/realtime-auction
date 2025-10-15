@@ -15,6 +15,6 @@ public class AuctionSearchCond {
 
     private String sellerName;
 
-    private Integer minPrice;
-    private Integer maxPrice;
+    private Long minPrice;
+    private Long maxPrice;
 }
