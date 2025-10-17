@@ -1,27 +1,16 @@
 import React, { useEffect, useState } from 'react';
+import { getRemainingTime } from '../../../utils/time';
 
 function AuctionTimer({ endTime }) {
-
-  // 남은 시간 계산 함수
-  const calculateTimeLeft = () => {
-    const diff = new Date(endTime) - new Date();
-    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((diff / (1000 * 60)) % 60);
-    const seconds = Math.floor((diff / 1000) % 60);
-
-    return { days, hours, minutes, seconds };
-  };
-
   // 초기값 설정
-  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft());
+  const [timeLeft, setTimeLeft] = useState(() => getRemainingTime(endTime));
 
   useEffect(() => {
-    const timer = setInterval(() => {
 
-      const remaining = calculateTimeLeft();
+    const timer = setInterval(() => {
+      // 매초 갱신
+      const remaining = getRemainingTime(endTime);
+      setTimeLeft(remaining);
 
       // 남은 시간이 없으면 타이머 종료
       if (
@@ -33,11 +22,15 @@ function AuctionTimer({ endTime }) {
         clearInterval(timer);
       }
 
-      setTimeLeft(remaining);
     }, 1000);
 
+    // useEffect 안에서 return으로 함수를 넘기면, 컴포넌트가 언마운트될 때 실행되는 정리함수로 동작(cleanup)
     return () => clearInterval(timer);
   }, [endTime]);
+
+  if (timeLeft.expired) {
+    return <div>경매 종료</div>
+  }
 
   const { days, hours, minutes, seconds } = timeLeft;
 

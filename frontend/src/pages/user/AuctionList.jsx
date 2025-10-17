@@ -8,6 +8,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { NumericFormat } from 'react-number-format';
 import AuctionStatus from '../../components/user/auction/AuctionStatus';
 import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
+import { getRemainingTime } from '../../utils/time';
 
 export default function AuctionList() {
   const navigate = useNavigate();
@@ -122,18 +123,12 @@ export default function AuctionList() {
   const treeItems = renderTree(categories);
 
   const formatRemainingTime = (endTime) => {
-    const now = new Date();
-    const end = new Date(endTime);
-    const diffMs = end - now;
+    const { days, hours, minutes, expired } = getRemainingTime(endTime);
 
-    if (diffMs <= 0) return "마감";
-
-    const diffSec = Math.floor(diffMs / 1000);
-    const days = Math.floor(diffSec / (24 * 3600));
-    const hours = Math.floor((diffSec % (24 * 3600)) / 3600);
-    const minutes = Math.floor((diffSec % 3600) / 60);
+    if (expired) return "마감";
 
     if (days > 0) return `${days}일 ${hours}시간`;
+    
     const pad = (n) => String(n).padStart(2, "0");
     return `${hours}시간 ${pad(minutes)}분`;
   };
@@ -386,7 +381,7 @@ export default function AuctionList() {
                           </Typography>
 
                           <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-                          
+
                           <AccessAlarmIcon fontSize="small" />
                           <Typography variant="body2" color="text.secondary">
                             {formatRemainingTime(auction.endTime)}
