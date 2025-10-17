@@ -1,10 +1,11 @@
 import { Box, Container, Grid, Typography, Skeleton, Button, Stack, Divider } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/api';
 import AuctionTimer from '../../components/user/auction/AuctionTimer';
-import AuctionStatus from '../../components/user/auction/AuctionStatus';
 import ImageGallery from '../../components/common/ImageGallery';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 function AuctionDetails() {
   const { auctionId } = useParams();
@@ -12,13 +13,52 @@ function AuctionDetails() {
   const location = useLocation();
 
   const [auction, setAuction] = useState(null);
+  const [currentPrice, setCurrentPrice] = useState(auction?.currentPrice || 0);
+  const [bids, setBids] = useState([]);
+
+  const stompClient = useRef(null); // 리렌더링되도 값이 유지됨
+
+  const accessToken = localStorage.getItem("accessToken");
 
   useEffect(() => {
+    // 초기 데이터 조회
     api.get(`/api/auctions/${auctionId}`)
       .then(res => {
         setAuction(res.data);
       })
       .catch(err => console.error(err));
+
+    // 웹소켓 연결
+    const client = new Client({
+      webSocketFactory: () => new SockJS(`${import.meta.env.VITE_BACKEND_API_BASE_URL}/ws`),
+      connectHeaders: {
+        // 로그인 상태일 때 토큰 전달
+        'Authorization': accessToken ? `Bearer ${accessToken}` : '',
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+
+    // 연결 성공 로직
+    client.onConnect = () => {
+      // 실시간 가격 업데이트 구독
+      client.subscribe(`/topic/auctions/${auctionId}`, (message) => {
+        console.log(JSON.parse(message.body));
+      });
+
+      // 개인 오류 메시지 구독
+      client.subscribe('/user/queue/errors', (error) => {
+          console.error(JSON.parse(error.body));
+      })
+    };
+
+    client.activate();
+    stompClient.current = client;
+
+    // 언마운트 시 연결 종료(cleanup)
+    return () => stompClient.current.deactivate(); // 연결 해제
+
   }, [auctionId]);
 
   // 경매 삭제
@@ -41,6 +81,20 @@ function AuctionDetails() {
         setAuction(prev => ({ ...prev, status: 'CANCELLED' }));
       })
       .catch(err => console.error(err));
+  };
+
+  // 입찰 테스트
+  const handleBid = () => {
+    if (!stompClient.current || !stompClient.current.connected) return;
+
+    stompClient.current.publish({
+      destination: `/app/auctions/${auctionId}/bids`,
+      body: JSON.stringify(
+        {
+          message: "hello"
+        }
+      ),
+    });
   };
 
 
@@ -107,7 +161,7 @@ function AuctionDetails() {
 
           <Typography variant="body1">카테고리: {auction.categoryName}</Typography>
 
-          <Button variant="contained" color="black">
+          <Button variant="contained" color="black" onClick={() => handleBid()}>
             입찰하기
           </Button>
 
