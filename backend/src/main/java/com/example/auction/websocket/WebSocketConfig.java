@@ -29,7 +29,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         // 클라이언트가 "/topic"으로 시작하는 목적지로 메시지를 구독(subscribe)하면
         // 메모리 기반 메시지 브로커가 해당 메시지를 브로드캐스트한다.
-        registry.enableSimpleBroker("/topic"); // 내장브로커
+        // "/queue"추가 -> convertAndSendToUser의 목적지 /queue/errors가 브로커에 등록됨
+        registry.enableSimpleBroker("/topic", "/queue"); // 내장브로커
+
+        // 유저 전용 라우팅 활성화
+        registry.setUserDestinationPrefix("/user");
     }
 
     // 웹소켓요청(connect, subscribe, disconnect) 등의 요청시에는 http header 등 http 메시지를 넣어올 수 있고,

@@ -8,6 +8,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,7 @@ public class StompHandler implements ChannelInterceptor {
     // connect, subscribe, send, disconnect 하기 전에 이 메서드를 탄다.
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
         // 임시 확인용
         if (accessor != null) {
@@ -34,15 +35,19 @@ public class StompHandler implements ChannelInterceptor {
 
             String bearerToken = accessor.getFirstNativeHeader("Authorization");
 
-            if(bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
                 String token = bearerToken.substring(7);
                 if (jwtTokenProvider.validateToken(token)) {
                     // 사용자 정보 추출
                     Authentication authentication = jwtTokenProvider.getAuthentication(token);
 
                     // STOMP 세션에 인증된 사용자 정보 바인딩
+                    // Principal을 이용하여 컨트롤러에서 STOMP 세션의 사용자 정보를 받음
+                    // SecurityContext에는 세팅되지 않는다.
                     accessor.setUser(authentication);
                 }
+            } else {
+                throw new IllegalArgumentException("연결거부 테스트");
             }
         }
 
