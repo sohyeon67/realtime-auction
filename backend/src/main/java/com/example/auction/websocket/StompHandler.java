@@ -46,8 +46,6 @@ public class StompHandler implements ChannelInterceptor {
                     // SecurityContext에는 세팅되지 않는다.
                     accessor.setUser(authentication);
                 }
-            } else {
-                throw new IllegalArgumentException("연결거부 테스트");
             }
         }
 
