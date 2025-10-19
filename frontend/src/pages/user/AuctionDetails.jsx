@@ -35,9 +35,9 @@ function AuctionDetails() {
         // 로그인 상태일 때 토큰 전달
         'Authorization': accessToken ? `Bearer ${accessToken}` : '',
       },
-      reconnectDelay: 5000,
-      heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
+      // reconnectDelay: 5000,
+      // heartbeatIncoming: 4000,
+      // heartbeatOutgoing: 4000,
     });
 
     // 연결 성공 로직
@@ -51,6 +51,12 @@ function AuctionDetails() {
       client.subscribe('/user/queue/errors', (error) => {
           console.error(JSON.parse(error.body));
       })
+    };
+
+    // 서버에서 예외를 던져 연결 요청을 거부했을 때, 클라이언트 에러 콜백
+    client.onStompError = (frame) => {
+      client.deactivate();  // 재연결 중단
+      alert("서버에서 연결 거부");
     };
 
     client.activate();
