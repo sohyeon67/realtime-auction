@@ -83,6 +83,10 @@ public class Auction extends BaseTime {
         this.endTime = endTime;
     }
 
+    public void updateCurrentPrice(Long currentPrice) {
+        this.currentPrice = currentPrice;
+    }
+
     /// 비즈니스
     public boolean isOngoing() {
         LocalDateTime now = LocalDateTime.now();

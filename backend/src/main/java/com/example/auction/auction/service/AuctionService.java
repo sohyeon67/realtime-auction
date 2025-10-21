@@ -7,6 +7,8 @@ import com.example.auction.auction.dto.*;
 import com.example.auction.auction.repository.AuctionImageRepository;
 import com.example.auction.auction.repository.AuctionQueryRepository;
 import com.example.auction.auction.repository.AuctionRepository;
+import com.example.auction.bid.dto.BidResDto;
+import com.example.auction.bid.service.BidService;
 import com.example.auction.category.domain.Category;
 import com.example.auction.category.repository.CategoryRepository;
 import com.example.auction.file.domain.FileCategory;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -32,6 +35,7 @@ import java.util.List;
 public class AuctionService {
 
     private final FileUploadService fileUploadService;
+    private final BidService bidService;
 
     private final AuctionRepository auctionRepository;
     private final MemberRepository memberRepository;
@@ -223,6 +227,28 @@ public class AuctionService {
                 });
     }
 
+    // 입찰
+    public BidResDto placeBid(Long auctionId, String username, Long bidPrice) {
+        Auction auction = findAuctionOrThrow(auctionId);
+        Member member = memberRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("회원 없음"));
+
+        // 경매 시간 검사
+        if (LocalDateTime.now().isBefore(auction.getStartTime()) || LocalDateTime.now().isAfter(auction.getEndTime())) {
+            throw new IllegalArgumentException("경매 진행 불가");
+        }
+
+        // 입찰 금액이 현재 최고가 + 최소 입찰 단위보다 크거나 같은지
+        if (bidPrice < auction.getCurrentPrice() + 1000) {
+            throw new IllegalArgumentException("입찰 금액 부족");
+        }
+
+        // 사용자 검사 + 판매자 입찰 방지
+        if (auction.getSeller().getUsername().equals(username)) {
+            throw new IllegalArgumentException("판매자 입찰 불가");
+        }
+
+        return bidService.saveBid(auction, member, bidPrice);
+    }
 
     // 편의 메서드
     private Auction findAuctionOrThrow(Long id) {

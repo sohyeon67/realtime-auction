@@ -1,11 +1,16 @@
 package com.example.auction.bid.controller;
 
+import com.example.auction.auction.service.AuctionService;
+import com.example.auction.bid.dto.BidReqDto;
+import com.example.auction.bid.dto.BidResDto;
 import com.example.auction.bid.service.BidService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
@@ -16,27 +21,28 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class BidController {
 
+    private final AuctionService auctionService;
     private final BidService bidService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/auctions/{auctionId}/bids")
-    public String sendMessage(@DestinationVariable Long auctionId, String message, Principal principal) {
+    public void sendMessage(@DestinationVariable Long auctionId, @Valid @RequestBody BidReqDto dto, Principal principal) {
 
-        // 경매 시간 검사
-
-        // 입찰 금액이 현재 최고가 + 최소 입찰 단위보다 크거나 같은지
-
-        // 사용자 검사 + 판매자 입찰 방지
-
-        // 웹소켓 발송
-        messagingTemplate.convertAndSend("/topic/auctions/" + auctionId, Map.of("testMsg", "입찰성공"));
-
-        // 개인 오류 메시지
-        if (principal != null) {
-            String username = principal.getName();
-            messagingTemplate.convertAndSendToUser(username, "/queue/errors", Map.of("testMsg", "입찰실패"));
+        // 로그인 안 됐으면 입찰 무시
+        if (principal == null) {
+            return;
         }
 
-        return message;
+        try {
+            // 입찰 처리
+            BidResDto bidResDto = auctionService.placeBid(auctionId, principal.getName(), dto.getBidPrice());
+            messagingTemplate.convertAndSend("/topic/auctions/" + auctionId, bidResDto);
+        } catch (Exception e) {
+            // 개인 오류 메시지
+            messagingTemplate.convertAndSendToUser(
+                    principal.getName(),
+                    "/queue/errors",
+                    Map.of("error", e.getMessage()));
+        }
     }
 }

@@ -6,8 +6,6 @@ import com.example.auction.util.BaseCreated;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -29,9 +27,5 @@ public class Bid extends BaseCreated {
 
     @Column(nullable = false)
     private Long bidPrice;
-
-    @Column(nullable = false)
-    private LocalDateTime bidTime;
-
 
 }
