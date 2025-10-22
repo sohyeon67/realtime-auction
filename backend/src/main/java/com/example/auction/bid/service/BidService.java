@@ -6,6 +6,8 @@ import com.example.auction.bid.dto.BidResDto;
 import com.example.auction.bid.repository.BidRepository;
 import com.example.auction.member.domain.Member;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,11 +32,22 @@ public class BidService {
 
         return BidResDto.builder()
                 .bidId(saved.getId())
-                .auctionId(saved.getAuction().getId())
                 .bidderName(saved.getMember().getNickname())
                 .bidPrice(saved.getBidPrice())
                 .bidTime(saved.getCreatedAt())
                 .build();
 
+    }
+
+    @Transactional(readOnly = true)
+    public Page<BidResDto> findBidsByAuctionId(Long auctionId, Pageable pageable) {
+        Page<Bid> bids = bidRepository.findByAuctionIdOrderByCreatedAtDesc(auctionId, pageable);
+        return bids.map(
+                bid -> BidResDto.builder()
+                        .bidId(bid.getId())
+                        .bidderName(bid.getMember().getNickname())
+                        .bidPrice(bid.getBidPrice())
+                        .bidTime(bid.getCreatedAt())
+                        .build());
     }
 }

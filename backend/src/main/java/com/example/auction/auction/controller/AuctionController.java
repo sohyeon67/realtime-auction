@@ -2,6 +2,8 @@ package com.example.auction.auction.controller;
 
 import com.example.auction.auction.dto.*;
 import com.example.auction.auction.service.AuctionService;
+import com.example.auction.bid.dto.BidResDto;
+import com.example.auction.bid.service.BidService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuctionController {
 
     private final AuctionService auctionService;
+    private final BidService bidService;
 
     @PostMapping
     public ResponseEntity<AuctionIdResDto> create(@Valid @ModelAttribute AuctionSaveReqDto dto) {
@@ -57,5 +60,11 @@ public class AuctionController {
             @RequestParam(required = false, defaultValue = "POPULARITY") AuctionSort sort
     ) {
         return ResponseEntity.ok(auctionService.getAuctions(cond, pageable, sort));
+    }
+
+    // 특정 경매의 입찰 목록 조회
+    @GetMapping("/{auctionId}/bids")
+    public Page<BidResDto> getBidsByAuction(@PathVariable Long auctionId, Pageable pageable) {
+        return bidService.findBidsByAuctionId(auctionId, pageable);
     }
 }
