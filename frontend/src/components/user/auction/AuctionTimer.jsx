@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getRemainingTime } from '../../../utils/time';
+import { Typography } from '@mui/material';
 
 function AuctionTimer({ endTime }) {
   // 초기값 설정
@@ -29,18 +30,18 @@ function AuctionTimer({ endTime }) {
   }, [endTime]);
 
   if (timeLeft.expired) {
-    return <div>경매 종료</div>
+    return <Typography variant="h6">경매 종료</Typography>
   }
 
   const { days, hours, minutes, seconds } = timeLeft;
 
   return (
-    <div>
+    <Typography variant="h6">
       {days > 0 && `${days}일 `}
       {hours > 0 && `${hours}시간 `}
       {minutes > 0 && `${minutes}분 `}
       {minutes > 0 ? (seconds === 0 ? "0초" : `${seconds}초`) : seconds > 0 && `${seconds}초`}
-    </div>
+    </Typography>
   );
 }
 

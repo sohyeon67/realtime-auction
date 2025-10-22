@@ -6,6 +6,8 @@ import AuctionTimer from '../../components/user/auction/AuctionTimer';
 import ImageGallery from '../../components/common/ImageGallery';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import BidInput from '../../components/user/auction/BidInput';
+import BidListModal from '../../components/user/auction/BidListModal';
 
 function AuctionDetails() {
   const { auctionId } = useParams();
@@ -14,7 +16,9 @@ function AuctionDetails() {
 
   const [auction, setAuction] = useState(null);
   const [currentPrice, setCurrentPrice] = useState(auction?.currentPrice || 0);
-  const [bids, setBids] = useState([]);
+  const [open, setOpen] = useState(false);  // 모달
+
+  const [latestBid, setLatestBid] = useState(null);
 
   const stompClient = useRef(null); // 리렌더링되도 값이 유지됨
 
@@ -25,6 +29,7 @@ function AuctionDetails() {
     api.get(`/api/auctions/${auctionId}`)
       .then(res => {
         setAuction(res.data);
+        setCurrentPrice(res.data.currentPrice);
       })
       .catch(err => console.error(err));
 
@@ -44,12 +49,14 @@ function AuctionDetails() {
     client.onConnect = () => {
       // 실시간 가격 업데이트 구독
       client.subscribe(`/topic/auctions/${auctionId}`, (message) => {
-        console.log(JSON.parse(message.body));
+        const newBid = JSON.parse(message.body);
+        setLatestBid(newBid);
+        setCurrentPrice(newBid.bidPrice);
       });
 
       // 개인 오류 메시지 구독
       client.subscribe('/user/queue/errors', (error) => {
-          console.error(JSON.parse(error.body));
+        console.error(JSON.parse(error.body));
       })
     };
 
@@ -90,14 +97,14 @@ function AuctionDetails() {
   };
 
   // 입찰 테스트
-  const handleBid = () => {
+  const handleBidSubmit = (price) => {
     if (!stompClient.current || !stompClient.current.connected) return;
 
     stompClient.current.publish({
       destination: `/app/auctions/${auctionId}/bids`,
       body: JSON.stringify(
         {
-          message: "hello"
+          bidPrice: price,
         }
       ),
     });
@@ -108,7 +115,7 @@ function AuctionDetails() {
 
   return (
     <Container sx={{ pt: { xs: 14, sm: 20 }, pb: { xs: 8, sm: 12 } }}>
-      <Typography variant="h4" sx={{ mb: { xs: 1, sm: 2 } }}>{auction.title}</Typography>
+      <Typography variant="h4" fontWeight="bold" sx={{ mb: { xs: 1, sm: 2 } }}>{auction.title}</Typography>
       <Divider />
 
       <Stack direction="row" justifyContent="flex-end" spacing={1} sx={{ my: 2 }}>
@@ -157,26 +164,58 @@ function AuctionDetails() {
 
         {/* 오른쪽: 정보 */}
         <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="h6">시작가: {auction.startPrice}원</Typography>
-          <Typography variant="h6">현재가: {auction.currentPrice}원</Typography>
 
-          <AuctionTimer endTime={auction.endTime} />
+          <Stack spacing={2}>
+            <Box display="flex" gap={4}>
+              <Typography variant="h5" sx={{ width: 80 }}>현재가</Typography>
+              <Typography variant="h5" fontWeight="bold">{currentPrice.toLocaleString()}원</Typography>
+            </Box>
 
-          <Typography variant="h6">시작시간: {new Date(auction.startTime).toLocaleString()}</Typography>
-          <Typography variant="h6">종료시간: {new Date(auction.endTime).toLocaleString()}</Typography>
+            <Box display="flex" gap={4}>
+              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>시작가</Typography>
+              <Typography variant="h6">{auction.startPrice.toLocaleString()}원</Typography>
+            </Box>
+            <Box display="flex" gap={4}>
+              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>남은시간</Typography>
+              <AuctionTimer endTime={auction.endTime} />
+            </Box>
+            <Box display="flex" gap={4}>
+              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>시작시간</Typography>
+              <Typography variant="h6">{new Date(auction.startTime).toLocaleString()}</Typography>
+            </Box>
+            <Box display="flex" gap={4}>
+              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>종료시간</Typography>
+              <Typography variant="h6">{new Date(auction.endTime).toLocaleString()}</Typography>
+            </Box>
+            <Box display="flex" gap={4}>
+              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>카테고리</Typography>
+              <Typography variant="h6">{auction.categoryName}</Typography>
+            </Box>
+          </Stack>
 
-          <Typography variant="body1">카테고리: {auction.categoryName}</Typography>
 
-          <Button variant="contained" color="black" onClick={() => handleBid()}>
-            입찰하기
+
+          <BidInput
+            currentPrice={currentPrice}
+            onBidSubmit={handleBidSubmit}
+          />
+
+          <Button
+            variant="contained"
+            color="lightGray"
+            onClick={() => setOpen(true)}
+          >
+            입찰 내역
           </Button>
+
+          <BidListModal open={open} onClose={() => setOpen(false)} auctionId={auctionId} newBid={latestBid} />
 
         </Grid>
       </Grid>
 
       {/* 아래: 설명 */}
       <Box sx={{ mt: 4 }}>
-        <Typography variant="h6">상품 설명</Typography>
+        <Typography variant="h5" fontWeight="bold">상품 설명</Typography>
         <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
           {auction.description}
         </Typography>

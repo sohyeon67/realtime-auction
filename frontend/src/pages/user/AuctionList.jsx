@@ -149,6 +149,7 @@ export default function AuctionList() {
       <Typography
         component="h2"
         variant="h4"
+        fontWeight="bold"
         sx={{ color: 'text.primary', width: { sm: '100%', md: '60%' }, textAlign: { sm: 'left', md: 'center' } }}
       >
         물품 목록
