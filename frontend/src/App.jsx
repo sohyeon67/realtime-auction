@@ -20,12 +20,14 @@ import AuctionEdit from './pages/user/AuctionEdit';
 import Dashboard from './pages/admin/Dashboard';
 import Users from './pages/admin/Users';
 import Categories from './pages/admin/Categories';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './routes/ProtectedRoute';
 
 
 function App() {
 
   return (
-    <>
+    <AuthProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/auth/callback" element={<SocialLoginSuccess />} />
@@ -38,9 +40,13 @@ function App() {
           <Route path="/user/*" element={<UserLayout />}>
             <Route path="home" element={<Home />} />
             <Route path="auctions" element={<AuctionList />} />
-            <Route path="auctions/register" element={<AuctionRegister />} />
             <Route path="auctions/:auctionId" element={<AuctionDetails />} />
-            <Route path="auctions/:auctionId/edit" element={<AuctionEdit />} />
+
+            {/* 인증된 사용자만 가능 */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="auctions/register" element={<AuctionRegister />} />
+              <Route path="auctions/:auctionId/edit" element={<AuctionEdit />} />
+            </Route>
           </Route>
 
           <Route path="/admin/*" element={<AdminLayout />}>
@@ -52,7 +58,7 @@ function App() {
           <Route path="*" element={<Navigate to="/user/home" replace />} />
         </Routes>
       </BrowserRouter>
-    </>
+    </AuthProvider>
   )
 }
 

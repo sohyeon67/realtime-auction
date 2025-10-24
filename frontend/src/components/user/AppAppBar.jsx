@@ -1,5 +1,4 @@
-import * as React from 'react';
-import { styled, alpha } from '@mui/material/styles';
+import { useState } from 'react';
 import Box from '@mui/material/Box';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -17,67 +16,74 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import SearchIcon from '@mui/icons-material/Search';
 import { InputBase, Paper } from '@mui/material';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function AppAppBar() {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const { isLoggedIn, logout } = useAuth();
 
   const handleLogin = () => {
     navigate('/auth/login', { state: { from: location } });
-  }
-
-  const [open, setOpen] = React.useState(false);
-
-  const toggleDrawer = (newOpen) => () => {
-    setOpen(newOpen);
   };
+
+  // 여기 고쳐야됨
+  const handleLogout = () => {
+    navigate("/user/home");
+    logout();
+  };
+
+  const [open, setOpen] = useState(false);
+  const toggleDrawer = (newOpen) => () => setOpen(newOpen);
 
   return (
     <AppBar
       position="fixed"
       sx={{
         boxShadow: 0,
-        // bgcolor: 'transparent',
         backgroundImage: 'none',
-        // mt: 'calc(var(--template-frame-height, 0px) + 28px)',
+        py: '0.5rem'
       }}
     >
       <Container maxWidth="lg">
         <Toolbar variant="regular" disableGutters>
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
 
-            <Sitemark />
-            <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button variant="text" color="info" size="small">
-                경매
-              </Button>
-              <Button variant="text" color="info" size="small">
-                FAQ
-              </Button>
-              <Button variant="text" color="info" size="small" sx={{ minWidth: 0 }}>
-                FAQ
-              </Button>
-            </Box>
+            <Link
+              to="/"
+              style={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              <Sitemark />
+            </Link>
 
-            <Paper
-              variant='outlined'
-              component="form"
+            <Box
               sx={{
-                p: '2px 4px',
-                display: 'flex',
+                position: 'absolute',
+                left: '50%',
+                transform: 'translateX(-50%)',
                 width: 400,
               }}
             >
-              <InputBase
-                sx={{ ml: 1, flex: 1 }}
-                placeholder="물품명 검색"
-                inputProps={{ 'aria-label': 'search' }}
-              />
-              <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
-                <SearchIcon />
-              </IconButton>
-            </Paper>
+              <Paper
+                variant='outlined'
+                component="form"
+                sx={{
+                  p: '2px 4px',
+                  display: 'flex',
+                  width: 400,
+                }}
+              >
+                <InputBase
+                  sx={{ ml: 1, flex: 1 }}
+                  placeholder="물품명 검색"
+                  inputProps={{ 'aria-label': 'search' }}
+                />
+                <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
+                  <SearchIcon />
+                </IconButton>
+              </Paper>
+            </Box>
 
           </Box>
 
@@ -88,23 +94,39 @@ export default function AppAppBar() {
               alignItems: 'center',
             }}
           >
-            <Box>
-              <IconButton color="inherit">
-                <NotificationsIcon />
-              </IconButton>
-              <IconButton color="inherit">
-                <AccountCircle />
-              </IconButton>
-            </Box>
-            <Button color="primary" variant="contained" size="small" component={Link} to="/user/auctions/register">
+
+            <Button color="inherit" variant="text" size="medium" component={Link} to="/user/auctions/register" sx={{ whiteSpace: 'nowrap' }}>
               물품등록
             </Button>
-            <Button color="primary" variant="contained" size="small" onClick={handleLogin}>
-              로그인
-            </Button>
-            <Button color="primary" variant="contained" size="small">
-              회원가입
-            </Button>
+
+            {!isLoggedIn && (
+              <>
+                <Divider orientation="vertical" variant="middle" flexItem />
+                <Button color="inherit" variant="text" size="medium" onClick={handleLogin} sx={{ whiteSpace: 'nowrap' }}>
+                  로그인
+                </Button>
+                <Divider orientation="vertical" variant="middle" flexItem />
+                <Button color="inherit" variant="text" size="medium" component={Link} to="/auth/signup" sx={{ whiteSpace: 'nowrap' }}>
+                  회원가입
+                </Button>
+              </>
+            )}
+
+            {isLoggedIn && (
+              <>
+                <Divider orientation="vertical" variant="middle" flexItem />
+                <Button color="inherit" variant="text" size="medium" onClick={handleLogout} sx={{ whiteSpace: 'nowrap' }}>
+                  로그아웃
+                </Button>
+                <IconButton color="inherit">
+                  <NotificationsIcon />
+                </IconButton>
+                <IconButton color="inherit">
+                  <AccountCircle />
+                </IconButton>
+              </>
+            )}
+
           </Box>
 
           {/* 반응형 */}

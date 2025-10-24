@@ -2,6 +2,7 @@ import { Box, Button, Divider, Stack, TextField, Typography, Link } from "@mui/m
 import { useState } from "react";
 import api from "../../api/api";
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from "../../contexts/AuthContext";
 
 
 const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL;
@@ -10,6 +11,7 @@ export default function Login() {
 
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
 
   // 로그인 직전 경로
   const from = location.state?.from?.pathname || '/';
@@ -34,7 +36,8 @@ export default function Login() {
         password,
       });
 
-      localStorage.setItem("accessToken", res.data.accessToken);
+      login(res.data.accessToken);
+      // localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
 
       // 로그인 성공 후 페이지 이동
