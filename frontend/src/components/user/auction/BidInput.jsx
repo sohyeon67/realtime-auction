@@ -30,6 +30,9 @@ export default function BidInput({ currentPrice, onBidSubmit, step = 1000 }) {
   };
 
   const handleSubmit = () => {
+    
+    if(!confirm("입찰하시겠습니까?")) return;
+
     const error = validateBid(bidPrice);
     if (error) {
       setErrorText(error);
@@ -46,6 +49,7 @@ export default function BidInput({ currentPrice, onBidSubmit, step = 1000 }) {
         </Fab>
 
         <NumericFormat
+        width={500}
           customInput={TextField}
           value={bidPrice}
           onChange={(e) => {

@@ -2,12 +2,13 @@ import { Box, Container, Grid, Typography, Skeleton, Button, Stack, Divider } fr
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/api';
-import AuctionTimer from '../../components/user/auction/AuctionTimer';
 import ImageGallery from '../../components/common/ImageGallery';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import BidInput from '../../components/user/auction/BidInput';
 import BidListModal from '../../components/user/auction/BidListModal';
+import AuctionInfo from '../../components/user/auction/AuctionInfo';
+import AuctionDescription from '../../components/user/auction/AuctionDescription';
 
 function AuctionDetails() {
   const { auctionId } = useParams();
@@ -96,7 +97,7 @@ function AuctionDetails() {
       .catch(err => console.error(err));
   };
 
-  // 입찰 테스트
+  // 실시간 입찰
   const handleBidSubmit = (price) => {
     if (!stompClient.current || !stompClient.current.connected) return;
 
@@ -165,35 +166,7 @@ function AuctionDetails() {
         {/* 오른쪽: 정보 */}
         <Grid size={{ xs: 12, md: 6 }} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
 
-          <Stack spacing={2}>
-            <Box display="flex" gap={4}>
-              <Typography variant="h5" sx={{ width: 80 }}>현재가</Typography>
-              <Typography variant="h5" fontWeight="bold">{currentPrice.toLocaleString()}원</Typography>
-            </Box>
-
-            <Box display="flex" gap={4}>
-              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>시작가</Typography>
-              <Typography variant="h6">{auction.startPrice.toLocaleString()}원</Typography>
-            </Box>
-            <Box display="flex" gap={4}>
-              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>남은시간</Typography>
-              <AuctionTimer endTime={auction.endTime} />
-            </Box>
-            <Box display="flex" gap={4}>
-              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>시작시간</Typography>
-              <Typography variant="h6">{new Date(auction.startTime).toLocaleString()}</Typography>
-            </Box>
-            <Box display="flex" gap={4}>
-              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>종료시간</Typography>
-              <Typography variant="h6">{new Date(auction.endTime).toLocaleString()}</Typography>
-            </Box>
-            <Box display="flex" gap={4}>
-              <Typography variant="h6" color="text.secondary" sx={{ width: 80 }}>카테고리</Typography>
-              <Typography variant="h6">{auction.categoryName}</Typography>
-            </Box>
-          </Stack>
-
-
+          <AuctionInfo auction={auction} currentPrice={currentPrice} />
 
           <BidInput
             currentPrice={currentPrice}
@@ -214,12 +187,7 @@ function AuctionDetails() {
       </Grid>
 
       {/* 아래: 설명 */}
-      <Box sx={{ mt: 4 }}>
-        <Typography variant="h5" fontWeight="bold">상품 설명</Typography>
-        <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
-          {auction.description}
-        </Typography>
-      </Box>
+      <AuctionDescription description={auction.description} />
 
     </Container>
   );
