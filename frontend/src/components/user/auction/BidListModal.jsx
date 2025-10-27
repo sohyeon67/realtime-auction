@@ -1,6 +1,6 @@
-import { Button, Dialog, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemText, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Button, Dialog, DialogContent, DialogTitle, IconButton, Paper, styled, Table, TableBody, TableCell, tableCellClasses, TableContainer, TableHead, TableRow } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import api from "../../../api/api";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -26,25 +26,38 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export default function BidListModal({ open, onClose, auctionId, newBid }) {
 
   const [bids, setBids] = useState([]);
-  const [page, setPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const lastBidIdRef = useRef(null);
   const size = 10;
 
   useEffect(() => {
     if (open) {
       setBids([]);
-      setPage(0);
-      setTotalPages(0);
+      setHasNext(false);
+      lastBidIdRef.current = null;
       fetchBids(0); // 첫 페이지 로드
     }
-  }, [open, auctionId, newBid]);
+  }, [open, auctionId]);
 
-  const fetchBids = (pageNum) => {
-    api.get(`/api/auctions/${auctionId}/bids?page=${pageNum}&size=${size}`)
+  // 실시간 입찰이 들어올 때 맨 앞에 추가
+  useEffect(() => {
+    if (newBid) {
+      setBids(prev => [newBid, ...prev]);
+    }
+  }, [newBid]);
+
+  const fetchBids = () => {
+    let url = `/api/auctions/${auctionId}/bids?size=${size}`;
+    if (lastBidIdRef.current) {
+      url += `&lastBidId=${lastBidIdRef.current}`;
+    }
+
+    api.get(url)
       .then(res => {
-        console.log(res.data);
-        setBids(prev => [...prev, ...res.data.content]);
-        setTotalPages(res.data.totalPages);
+        const { bids: newBids, hasNext: nextExists, lastBidId } = res.data;
+        setBids(prev => [...prev, ...newBids]);
+        setHasNext(nextExists);
+        lastBidIdRef.current = lastBidId;
       });
   };
 
@@ -93,17 +106,13 @@ export default function BidListModal({ open, onClose, auctionId, newBid }) {
           </TableContainer>
         )}
 
-        {page < totalPages - 1 && (
+        {hasNext && (
           <Button
             sx={{ mt: 1 }}
             variant="outlined"
             color="black"
             fullWidth
-            onClick={() => {
-              const nextPage = page + 1;
-              setPage(nextPage);
-              fetchBids(nextPage);
-            }}
+            onClick={() => fetchBids()}
           >
             더보기
           </Button>
