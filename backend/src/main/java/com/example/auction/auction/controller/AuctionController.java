@@ -2,7 +2,7 @@ package com.example.auction.auction.controller;
 
 import com.example.auction.auction.dto.*;
 import com.example.auction.auction.service.AuctionService;
-import com.example.auction.bid.dto.BidResDto;
+import com.example.auction.bid.dto.BidCursorResDto;
 import com.example.auction.bid.service.BidService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -64,7 +64,10 @@ public class AuctionController {
 
     // 특정 경매의 입찰 목록 조회
     @GetMapping("/{auctionId}/bids")
-    public Page<BidResDto> getBidsByAuction(@PathVariable Long auctionId, Pageable pageable) {
-        return bidService.findBidsByAuctionId(auctionId, pageable);
+    public BidCursorResDto getBidsByAuction(@PathVariable Long auctionId,
+                                            @RequestParam(required = false) Long lastBidId,
+                                            @RequestParam(defaultValue = "10") int size
+    ) {
+        return bidService.findBidsByAuctionId(auctionId, lastBidId, size);
     }
 }
