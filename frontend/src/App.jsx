@@ -10,7 +10,6 @@ import Signup from './pages/auth/Signup';
 import SocialLoginSuccess from './pages/auth/SocialLoginSuccess';
 
 // User 페이지
-import Home from './pages/user/Home';
 import AuctionList from './pages/user/AuctionList';
 import AuctionRegister from './pages/user/AuctionRegister';
 import AuctionDetails from './pages/user/AuctionDetails';
@@ -38,7 +37,6 @@ function App() {
           </Route>
 
           <Route path="/user/*" element={<UserLayout />}>
-            <Route path="home" element={<Home />} />
             <Route path="auctions" element={<AuctionList />} />
             <Route path="auctions/:auctionId" element={<AuctionDetails />} />
 
@@ -55,7 +53,7 @@ function App() {
             <Route path="categories" element={<Categories />} />
           </Route>
 
-          <Route path="*" element={<Navigate to="/user/home" replace />} />
+          <Route path="*" element={<Navigate to="/user/auctions" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

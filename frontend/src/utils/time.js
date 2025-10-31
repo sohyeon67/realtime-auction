@@ -9,3 +9,14 @@ export const getRemainingTime = (endTime) => {
 
   return { days, hours, minutes, seconds, expired: false };
 };
+
+export const formatRemainingTime = (endTime) => {
+  const { days, hours, minutes, expired } = getRemainingTime(endTime);
+
+  if (expired) return "마감";
+
+  if (days > 0) return `${days}일 ${hours}시간`;
+
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${hours}시간 ${pad(minutes)}분`;
+};
