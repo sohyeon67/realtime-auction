@@ -8,12 +8,13 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import "../../styles/Categories.css";
 import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { useCategories } from "../../hooks/useCategories";
 
 function CategoryAdminPage() {
   const treeRef = useRef();
 
+  const {categories: originalCategories, refresh: refreshCategories} = useCategories();
   const [categories, setCategories] = useState([]);
-  const [originalCategories, setOriginalCategories] = useState([]);
 
   const [added, setAdded] = useState([]);
   const [updated, setUpdated] = useState([]);
@@ -21,20 +22,10 @@ function CategoryAdminPage() {
 
   const [lastAddedId, setLastAddedId] = useState(null);
 
-
-  const getCategoriesFromServer = () => {
-    api.get("/api/categories")
-      .then(res => {
-        const converted = convertIdsToString(res.data);
-        setCategories(converted);
-        setOriginalCategories(converted);
-      })
-      .catch(() => alert("카테고리 불러오기 실패"));
-  };
-
   useEffect(() => {
-    getCategoriesFromServer();
-  }, []);
+    const converted = convertIdsToString(originalCategories);
+    setCategories(converted);
+  }, [originalCategories]);
 
   const convertIdsToString = (nodes) =>
     nodes.map(node => ({
@@ -54,7 +45,7 @@ function CategoryAdminPage() {
       setAdded([]);
       setUpdated([]);
       setDeleted([]);
-      getCategoriesFromServer(); // 서버에서 다시 가져오기
+      refreshCategories(); // 서버에서 다시 가져오기
     });
   };
 

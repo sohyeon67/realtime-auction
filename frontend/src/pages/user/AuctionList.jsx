@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { Container, Box, Grid, Typography, Divider, Card, CardContent, CardMedia, CardActionArea, Stack, Pagination, TextField, Button, IconButton, Select, MenuItem, FormControl, InputLabel, CardHeader } from '@mui/material';
 import { RichTreeView } from '@mui/x-tree-view';
@@ -9,14 +8,17 @@ import { NumericFormat } from 'react-number-format';
 import AuctionStatus from '../../components/user/auction/AuctionStatus';
 import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
 import { getRemainingTime } from '../../utils/time';
+import { useCategories } from '../../hooks/useCategories';
+import AuctionCard from '../../components/user/auction/AuctionCard';
 
 export default function AuctionList() {
   const navigate = useNavigate();
 
+  const { categories } = useCategories();
+
   // 브라우저 URL 쿼리스트링을 관리하기 위함
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [categories, setCategories] = useState([]);
   const [auctions, setAuctions] = useState([]);
   const [totalElements, setTotalElements] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -34,15 +36,6 @@ export default function AuctionList() {
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
 
   const [errors, setErrors] = useState({ minPrice: "", maxPrice: "" });
-
-  // 카테고리 불러오기
-  useEffect(() => {
-    api.get("/api/categories")
-      .then(res => {
-        setCategories(res.data);
-      })
-      .catch(() => alert("카테고리 불러오기 실패"));
-  }, []);
 
   // 경매 목록 불러오기
   const getAuctions = () => {
@@ -121,18 +114,6 @@ export default function AuctionList() {
   );
 
   const treeItems = renderTree(categories);
-
-  const formatRemainingTime = (endTime) => {
-    const { days, hours, minutes, expired } = getRemainingTime(endTime);
-
-    if (expired) return "마감";
-
-    if (days > 0) return `${days}일 ${hours}시간`;
-    
-    const pad = (n) => String(n).padStart(2, "0");
-    return `${hours}시간 ${pad(minutes)}분`;
-  };
-
 
   return (
     <Container
@@ -213,7 +194,7 @@ export default function AuctionList() {
 
         <Grid container spacing={2}>
 
-          {/* 왼쪽 */}
+          {/* 왼쪽 내용 영역 */}
           <Grid size={{ xs: 12, sm: 3 }}>
 
             <Card sx={{
@@ -333,70 +314,13 @@ export default function AuctionList() {
           </Grid>
 
 
+          {/* 오른쪽 내용 영역 */}
           <Grid size={{ xs: 12, sm: 9 }}>
 
             <Grid container spacing={2}>
-              {/* 오른쪽 내용 영역 */}
               {auctions.map(auction =>
                 <Grid size={{ xs: 12, sm: 6, md: 4 }} key={auction.auctionId}>
-                  <Card>
-                    <CardActionArea
-                      onClick={() => navigate(`/user/auctions/${auction.auctionId}?${searchParams.toString()}`)} // 상세페이지에 검색 조건 전달
-                    >
-
-                      <CardMedia
-                        component="img"
-                        height="140"
-                        image={auction.mainImageUrl}
-                        alt={auction.title}
-                      />
-
-                      <CardContent>
-
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {auction.title}
-                        </Typography>
-
-                        <Divider sx={{ my: 1 }} />
-
-                        <AuctionStatus status={auction.status} size="small" />
-
-                        <Typography
-                          variant="h6"
-                          sx={{ fontWeight: 'bold' }}
-                        >
-                          {auction.currentPrice?.toLocaleString()} 원
-                        </Typography>
-
-
-                        <Box display="flex" alignItems="center" gap={0.5}>
-                          <Typography variant="body2" color="text.secondary">
-                            입찰 {auction.bidCount} 회
-                          </Typography>
-
-                          <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-
-                          <AccessAlarmIcon fontSize="small" />
-                          <Typography variant="body2" color="text.secondary">
-                            {formatRemainingTime(auction.endTime)}
-                          </Typography>
-                        </Box>
-
-                        <Typography variant="body2" color="text.secondary">
-                          판매자 : {auction.sellerNickname}
-                        </Typography>
-
-                      </CardContent>
-
-                    </CardActionArea>
-                  </Card>
+                  <AuctionCard auction={auction} searchParams={searchParams} />
                 </Grid>
               )}
 
