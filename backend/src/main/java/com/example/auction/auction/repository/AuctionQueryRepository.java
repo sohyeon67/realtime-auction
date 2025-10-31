@@ -1,5 +1,6 @@
 package com.example.auction.auction.repository;
 
+import com.example.auction.auction.domain.AuctionStatus;
 import com.example.auction.auction.dto.AuctionListResDto;
 import com.example.auction.auction.dto.AuctionSearchCond;
 import com.example.auction.auction.dto.AuctionSort;
@@ -52,7 +53,8 @@ public class AuctionQueryRepository {
                         sellerNicknameContains(cond.getSellerName()),
                         inCategoryIds(cond.getCategoryIds()),
                         minPriceGoe(cond.getMinPrice()),
-                        maxPriceLoe(cond.getMaxPrice())
+                        maxPriceLoe(cond.getMaxPrice()),
+                        eqStatus(cond.getStatus())
                 )
                 .groupBy(auction.id, auctionImage.filePath, auction.title, auction.currentPrice, auction.endTime, auction.status, member.nickname)
                 .orderBy(getOrderSpecifier(sort))
@@ -69,7 +71,8 @@ public class AuctionQueryRepository {
                         sellerNicknameContains(cond.getSellerName()),
                         inCategoryIds(cond.getCategoryIds()),
                         minPriceGoe(cond.getMinPrice()),
-                        maxPriceLoe(cond.getMaxPrice())
+                        maxPriceLoe(cond.getMaxPrice()),
+                        eqStatus(cond.getStatus())
                 )
                 .fetchOne();
 
@@ -95,6 +98,10 @@ public class AuctionQueryRepository {
 
     private BooleanExpression maxPriceLoe(Long maxPrice) {
         return maxPrice != null ? auction.currentPrice.loe(maxPrice) : null;
+    }
+
+    private BooleanExpression eqStatus(AuctionStatus status) {
+        return status != null ? auction.status.eq(status) : null;
     }
 
     // 정렬

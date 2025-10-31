@@ -1,5 +1,6 @@
 package com.example.auction.auction.dto;
 
+import com.example.auction.auction.domain.AuctionStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,4 +18,6 @@ public class AuctionSearchCond {
 
     private Long minPrice;
     private Long maxPrice;
+
+    private AuctionStatus status = AuctionStatus.ONGOING;
 }

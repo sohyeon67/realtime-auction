@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Container, Box, Grid, Typography, Divider, Card, CardContent, CardMedia, CardActionArea, Stack, Pagination, TextField, Button, IconButton, Select, MenuItem, FormControl, InputLabel, CardHeader } from '@mui/material';
+import { Container, Box, Grid, Typography, Divider, Card, CardContent, Stack, Pagination, TextField, Button, IconButton, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { RichTreeView } from '@mui/x-tree-view';
 import api from '../../api/api';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { NumericFormat } from 'react-number-format';
-import AuctionStatus from '../../components/user/auction/AuctionStatus';
-import AccessAlarmIcon from '@mui/icons-material/AccessAlarm';
-import { getRemainingTime } from '../../utils/time';
 import { useCategories } from '../../hooks/useCategories';
 import AuctionCard from '../../components/user/auction/AuctionCard';
+import { AUCTION_STATUS, AUCTION_STATUS_OPTIONS } from '../../constants/auctionStatus';
+import { AUCTION_SORT, AUCTION_SORT_OPTIONS } from '../../constants/auctionSort';
 
 export default function AuctionList() {
-  const navigate = useNavigate();
-
   const { categories } = useCategories();
 
   // 브라우저 URL 쿼리스트링을 관리하기 위함
@@ -26,7 +23,8 @@ export default function AuctionList() {
   // 검색 조건
   const page = parseInt(searchParams.get("page")) || 1;
   const size = parseInt(searchParams.get("size")) || 12;
-  const sort = searchParams.get("sort") || "POPULARITY";
+  const status = searchParams.get("status") || AUCTION_STATUS.ONGOING;
+  const sort = searchParams.get("sort") || AUCTION_SORT.POPULARITY;
 
   // 최초 렌더링 시 URL에 있는 값으로 초기화하기 위해서
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
@@ -45,6 +43,7 @@ export default function AuctionList() {
     // 실제 페이지는 -1 해줘야 함
     params.append("page", page - 1);
     params.append("size", size);
+    params.append("status", status);
     params.append("sort", sort);
 
     // 검색 필터 값이 있는 것들만 세팅
@@ -86,10 +85,11 @@ export default function AuctionList() {
     if (newErrors.minPrice || newErrors.maxPrice) return;
 
     // 2. url 업데이트
-    // 유지되는 값들
+    // 검색시 첫페이지
     const params = {
-      size: searchParams.get("size") || 12,
-      sort: searchParams.get("sort") || "POPULARITY",
+      size,
+      status,
+      sort,
       page: 1,
     };
 
@@ -118,8 +118,6 @@ export default function AuctionList() {
   return (
     <Container
       sx={{
-        pt: { xs: 14, sm: 20 },
-        pb: { xs: 8, sm: 12 },
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -158,12 +156,39 @@ export default function AuctionList() {
               id="size-select"
               label="페이지당 항목"
               value={size}
-              onChange={(e) => setSearchParams({ ...Object.fromEntries(searchParams), size: e.target.value, page: 1 })}
+              onChange={(e) =>
+                setSearchParams({
+                  ...Object.fromEntries(searchParams),
+                  size: e.target.value,
+                  page: 1
+                })}
             >
               <MenuItem value={12}>12</MenuItem>
               <MenuItem value={24}>24</MenuItem>
               <MenuItem value={36}>36</MenuItem>
               <MenuItem value={48}>48</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel id="status-select-label">경매 상태</InputLabel>
+            <Select
+              labelId="status-select-label"
+              id="status-select"
+              label="상태"
+              value={status}
+              onChange={(e) =>
+                setSearchParams({
+                  ...Object.fromEntries(searchParams),
+                  page: 1,
+                  status: e.target.value
+                })}
+            >
+              {AUCTION_STATUS_OPTIONS.map((option) => (
+                <MenuItem key={option.key} value={option.key}>
+                  {option.text}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -174,15 +199,19 @@ export default function AuctionList() {
               id="sort-select"
               label="정렬"
               value={sort}
-              onChange={(e) => setSearchParams({ ...Object.fromEntries(searchParams), page: 1, sort: e.target.value })}
+              onChange={(e) =>
+                setSearchParams({
+                  ...Object.fromEntries(searchParams),
+                  page: 1,
+                  sort: e.target.value
+                })}
             >
-              <MenuItem value="POPULARITY">인기경매순</MenuItem>
-              <MenuItem value="ENDING_SOON">마감임박순</MenuItem>
-              <MenuItem value="RECENT">신규경매순</MenuItem>
-              <MenuItem value="PRICE_DESC">높은가격순</MenuItem>
-              <MenuItem value="PRICE_ASC">낮은가격순</MenuItem>
+              {AUCTION_SORT_OPTIONS.map((option) => (
+                <MenuItem key={option.key} value={option.key}>
+                  {option.text}
+                </MenuItem>
+              ))}
             </Select>
-
           </FormControl>
 
         </Stack>
