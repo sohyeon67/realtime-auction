@@ -1,16 +1,16 @@
-import { Container } from '@mui/material';
 import { Outlet } from 'react-router-dom'
 import Header from '../components/user/Header';
 import Footer from '../components/user/Footer';
-import AppAppBar from '../components/user/AppAppBar';
+import { Box } from '@mui/material';
 
 export default function UserLayout() {
   return (
     <>
-      {/* <Header /> */}
-      <AppAppBar/>
+      <Header />
+      <Box sx={{ pt: { xs: 14, sm: 20 }, pb: { xs: 8, sm: 12 } }}>
         <Outlet />
-      <Footer/>
-      </>
+      </Box>
+      <Footer />
+    </>
   );
 }

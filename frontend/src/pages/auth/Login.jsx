@@ -4,7 +4,6 @@ import api from "../../api/api";
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from "../../contexts/AuthContext";
 
-
 const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL;
 
 export default function Login() {
@@ -37,11 +36,11 @@ export default function Login() {
       });
 
       login(res.data.accessToken);
-      // localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
 
       // 로그인 성공 후 페이지 이동
-      // window.location.href = "/";
+      // 히스토리에서 로그인 페이지가 원래 접근하려던 페이지로 대체됨
+      // 로그인 후에 뒤로가기를 눌러도 로그인 페이지가 나오지 않음
       navigate(from, { replace: true });
 
     } catch (err) {

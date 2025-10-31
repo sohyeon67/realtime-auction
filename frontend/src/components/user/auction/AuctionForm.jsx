@@ -78,14 +78,10 @@ export default function AuctionForm({ initialData, onSubmit, mode = "register" }
 
   return (
     <Container
-      id="auctions"
       sx={{
-        pt: { xs: 14, sm: 20 },
-        pb: { xs: 8, sm: 12 },
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: { xs: 3, sm: 6 },
       }}
     >
       <form onSubmit={handleSubmit(data => onSubmit({ ...data, newImages, existingImages }, isMain))}>

@@ -1,5 +1,5 @@
 import { Box, Container, Grid, Typography, Skeleton, Button, Stack, Divider } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import api from '../../api/api';
 import ImageGallery from '../../components/common/ImageGallery';
@@ -115,7 +115,7 @@ function AuctionDetails() {
   if (!auction) return <Skeleton variant="rectangular" width="100%" height={400} />
 
   return (
-    <Container sx={{ pt: { xs: 14, sm: 20 }, pb: { xs: 8, sm: 12 } }}>
+    <Container>
       <Typography variant="h4" fontWeight="bold" sx={{ mb: { xs: 1, sm: 2 } }}>{auction.title}</Typography>
       <Divider />
 

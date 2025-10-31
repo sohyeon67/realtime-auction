@@ -1,30 +1,17 @@
 import { Chip, Stack } from '@mui/material'
+import { AUCTION_STATUS_META } from '../../../constants/auctionStatus'
 
 function AuctionStatus({ status, size = "medium" }) {
 
-  const textMap = {
-    READY: "시작전",
-    ONGOING: "진행중",
-    SOLD: "낙찰완료",
-    CANCELLED: "취소",
-    EXPIRED: "기간만료"
-  }
-
-  const colorMap = {
-    READY: "orange",
-    ONGOING: "green",
-    SOLD: "blue",
-    CANCELLED: "gray",
-    ENDED: "red",
-  }
+  const statusInfo = AUCTION_STATUS_META[status];
 
   return (
     <Stack direction="row" spacing={1}>
       <Chip
-        label={textMap[status]}
+        label={statusInfo.text}
         size={size}
         sx={{
-          backgroundColor: colorMap[status],
+          backgroundColor: statusInfo.color,
           color: 'white',
           fontWeight: 'bold'
         }} />
