@@ -156,12 +156,12 @@ export default function AuctionList() {
               id="size-select"
               label="페이지당 항목"
               value={size}
-              onChange={(e) =>
-                setSearchParams({
-                  ...Object.fromEntries(searchParams),
-                  size: e.target.value,
-                  page: 1
-                })}
+              onChange={(e) => {
+                const params = new URLSearchParams(searchParams);
+                params.set("size", e.target.value);
+                params.set("page", 1);
+                setSearchParams(params);
+              }}
             >
               <MenuItem value={12}>12</MenuItem>
               <MenuItem value={24}>24</MenuItem>
@@ -177,12 +177,12 @@ export default function AuctionList() {
               id="status-select"
               label="상태"
               value={status}
-              onChange={(e) =>
-                setSearchParams({
-                  ...Object.fromEntries(searchParams),
-                  page: 1,
-                  status: e.target.value
-                })}
+              onChange={(e) => {
+                const params = new URLSearchParams(searchParams);
+                params.set("status", e.target.value);
+                params.set("page", 1);
+                setSearchParams(params);
+              }}
             >
               {AUCTION_STATUS_OPTIONS.map((option) => (
                 <MenuItem key={option.key} value={option.key}>
@@ -199,12 +199,12 @@ export default function AuctionList() {
               id="sort-select"
               label="정렬"
               value={sort}
-              onChange={(e) =>
-                setSearchParams({
-                  ...Object.fromEntries(searchParams),
-                  page: 1,
-                  sort: e.target.value
-                })}
+              onChange={(e) => {
+                const params = new URLSearchParams(searchParams);
+                params.set("sort", e.target.value);
+                params.set("page", 1);
+                setSearchParams(params);
+              }}
             >
               {AUCTION_SORT_OPTIONS.map((option) => (
                 <MenuItem key={option.key} value={option.key}>
