@@ -51,6 +51,10 @@ public class Auction extends BaseTime {
     @Column(nullable = false)
     private AuctionStatus status;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int bidCount = 0; // 반정규화
+
     @OneToMany(mappedBy = "auction")
     @Builder.Default
     private List<AuctionImage> images = new ArrayList<>();
@@ -108,6 +112,10 @@ public class Auction extends BaseTime {
         if (!isBeforeStart()) {
             throw new IllegalStateException("경매 시작 후에는 수정하거나 삭제할 수 없습니다.");
         }
+    }
+
+    public void increaseBidCount() {
+        this.bidCount++;
     }
 
 

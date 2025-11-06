@@ -33,6 +33,9 @@ public class BidService {
         // 경매 현재가 갱신
         auction.updateCurrentPrice(bidPrice);
 
+        // 입찰수 증가
+        auction.increaseBidCount();
+
         return BidResDto.builder()
                 .bidId(saved.getId())
                 .bidderName(saved.getMember().getNickname())

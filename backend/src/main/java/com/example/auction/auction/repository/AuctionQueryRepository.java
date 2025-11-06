@@ -39,7 +39,7 @@ public class AuctionQueryRepository {
                         auctionImage.filePath,
                         auction.title,
                         auction.currentPrice,
-                        bid.count().intValue(),
+                        auction.bidCount,
                         auction.endTime,
                         auction.status,
                         member.nickname
@@ -47,7 +47,6 @@ public class AuctionQueryRepository {
                 .from(auction)
                 .join(auction.seller, member)
                 .leftJoin(auctionImage).on(auctionImage.auction.eq(auction).and(auctionImage.isMain.isTrue()))
-                .leftJoin(bid).on(bid.auction.eq(auction))
                 .where(
                         keywordContains(cond.getKeyword()),
                         sellerNicknameContains(cond.getSellerName()),
@@ -56,7 +55,6 @@ public class AuctionQueryRepository {
                         maxPriceLoe(cond.getMaxPrice()),
                         eqStatus(cond.getStatus())
                 )
-                .groupBy(auction.id, auctionImage.filePath, auction.title, auction.currentPrice, auction.endTime, auction.status, member.nickname)
                 .orderBy(getOrderSpecifier(sort))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -108,7 +106,7 @@ public class AuctionQueryRepository {
     private OrderSpecifier<?> getOrderSpecifier(AuctionSort sort) {
         switch (sort) {
             case POPULARITY:
-                return bid.count().desc();
+                return auction.bidCount.desc();
             case ENDING_SOON: // 나중에 보충 필요
                 return auction.endTime.asc();
             case RECENT:
@@ -118,7 +116,7 @@ public class AuctionQueryRepository {
             case PRICE_ASC:
                 return auction.currentPrice.asc();
             default:
-                return bid.count().desc();
+                return auction.bidCount.desc();
         }
     }
 

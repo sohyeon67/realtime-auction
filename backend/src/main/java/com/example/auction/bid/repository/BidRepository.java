@@ -14,7 +14,7 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
             SELECT b FROM Bid b 
             WHERE b.auction.id = :auctionId 
             AND (:lastBidId IS NULL OR b.id < :lastBidId) 
-            ORDER BY b.id DESC
+            ORDER BY b.createdAt DESC, b.id DESC
     """)
     List<Bid> findNextBidsByBidId(@Param("auctionId") Long auctionId, @Param("lastBidId") Long lastBidId, Pageable pageable);
 }
