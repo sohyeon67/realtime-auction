@@ -41,9 +41,9 @@ function AuctionDetails() {
         // 로그인 상태일 때 토큰 전달
         'Authorization': accessToken ? `Bearer ${accessToken}` : '',
       },
-      // reconnectDelay: 5000,
-      // heartbeatIncoming: 4000,
-      // heartbeatOutgoing: 4000,
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
     });
 
     // 연결 성공 로직
@@ -57,7 +57,13 @@ function AuctionDetails() {
 
       // 개인 오류 메시지 구독
       client.subscribe('/user/queue/errors', (error) => {
-        console.error(JSON.parse(error.body));
+        try {
+          const errorData = JSON.parse(error.body);
+          alert(errorData.error || "알 수 없는 오류가 발생했습니다.");
+        } catch (e) {
+          console.error("에러 파싱 실패:", e);
+          alert("오류가 발생했습니다.");
+        }
       })
     };
 

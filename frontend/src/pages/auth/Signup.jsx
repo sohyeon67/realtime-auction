@@ -90,6 +90,7 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validate()) return;
 
     if (!isEmailChecked) return;
@@ -106,6 +107,7 @@ export default function Signup() {
     // API 요청
     try {
       const res = await api.post('/api/members', payload);
+      alert("가입이 완료되었습니다. 로그인을 해주세요.");
       window.location.href = "/auth/login";
     } catch (err) {
       const newErrors = {};

@@ -3,8 +3,13 @@ import { useEffect, useState } from "react";
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { NumericFormat } from "react-number-format";
+import { useAuth } from "../../../contexts/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function BidInput({ currentPrice, onBidSubmit, step = 1000 }) {
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [bidPrice, setBidPrice] = useState(currentPrice + step);
   const [errorText, setErrorText] = useState("");
 
@@ -30,8 +35,14 @@ export default function BidInput({ currentPrice, onBidSubmit, step = 1000 }) {
   };
 
   const handleSubmit = () => {
-    
-    if(!confirm("입찰하시겠습니까?")) return;
+
+    if (!isLoggedIn) {
+      alert("로그인이 필요합니다.");
+      navigate('/auth/login', { state: { from: location } });
+      return;
+    }
+
+    if (!confirm("입찰하시겠습니까?")) return;
 
     const error = validateBid(bidPrice);
     if (error) {
@@ -49,7 +60,7 @@ export default function BidInput({ currentPrice, onBidSubmit, step = 1000 }) {
         </Fab>
 
         <NumericFormat
-        width={500}
+          width={500}
           customInput={TextField}
           value={bidPrice}
           onChange={(e) => {
