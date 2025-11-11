@@ -22,7 +22,6 @@ import java.util.Map;
 public class BidController {
 
     private final AuctionService auctionService;
-    private final BidService bidService;
     private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/auctions/{auctionId}/bids")

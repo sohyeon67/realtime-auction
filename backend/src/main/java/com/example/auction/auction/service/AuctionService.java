@@ -7,8 +7,9 @@ import com.example.auction.auction.dto.*;
 import com.example.auction.auction.repository.AuctionImageRepository;
 import com.example.auction.auction.repository.AuctionQueryRepository;
 import com.example.auction.auction.repository.AuctionRepository;
+import com.example.auction.bid.domain.Bid;
 import com.example.auction.bid.dto.BidResDto;
-import com.example.auction.bid.service.BidService;
+import com.example.auction.bid.repository.BidRepository;
 import com.example.auction.category.domain.Category;
 import com.example.auction.category.repository.CategoryRepository;
 import com.example.auction.file.domain.FileCategory;
@@ -35,13 +36,13 @@ import java.util.List;
 public class AuctionService {
 
     private final FileUploadService fileUploadService;
-    private final BidService bidService;
 
     private final AuctionRepository auctionRepository;
     private final MemberRepository memberRepository;
     private final CategoryRepository categoryRepository;
     private final AuctionImageRepository auctionImageRepository;
     private final AuctionQueryRepository auctionQueryRepository;
+    private final BidRepository bidRepository;
 
     public Long create(AuctionSaveReqDto dto) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -232,6 +233,11 @@ public class AuctionService {
         Auction auction = findAuctionOrThrow(auctionId);
         Member member = memberRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("회원 없음"));
 
+        // 사용자 검사 + 판매자 입찰 방지
+        if (auction.getSeller().getUsername().equals(username)) {
+            throw new IllegalArgumentException("판매자 입찰 불가");
+        }
+
         // 경매 시간 검사
         if (LocalDateTime.now().isBefore(auction.getStartTime()) || LocalDateTime.now().isAfter(auction.getEndTime())) {
             throw new IllegalArgumentException("경매 진행 불가");
@@ -242,12 +248,26 @@ public class AuctionService {
             throw new IllegalArgumentException("입찰 금액 부족");
         }
 
-        // 사용자 검사 + 판매자 입찰 방지
-        if (auction.getSeller().getUsername().equals(username)) {
-            throw new IllegalArgumentException("판매자 입찰 불가");
-        }
+        // 경매 현재가 갱신
+        auction.updateCurrentPrice(bidPrice);
 
-        return bidService.saveBid(auction, member, bidPrice);
+        // 입찰수 증가
+        auction.increaseBidCount();
+
+        // 입찰 생성 및 저장
+        Bid bid = Bid.builder()
+                .auction(auction)
+                .member(member)
+                .bidPrice(bidPrice)
+                .build();
+        Bid saved = bidRepository.save(bid);
+
+        return BidResDto.builder()
+                .bidId(saved.getId())
+                .bidderName(saved.getMember().getNickname())
+                .bidPrice(saved.getBidPrice())
+                .bidTime(saved.getCreatedAt())
+                .build();
     }
 
     // 편의 메서드

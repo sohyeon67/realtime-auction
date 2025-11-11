@@ -71,10 +71,6 @@ public class Auction extends BaseTime {
         this.category = category;
     }
 
-    public void updateStatus(AuctionStatus status) {
-        this.status = status;
-    }
-
     public void updateStartPrice(Long startPrice) {
         this.startPrice = startPrice;
     }
