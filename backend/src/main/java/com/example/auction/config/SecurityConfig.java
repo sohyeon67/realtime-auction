@@ -85,11 +85,15 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         // 이 부분은 컨트롤러(서블릿) 경로를 말한다. 필터 경로 x
+                        .requestMatchers("/files/**").permitAll()
                         .requestMatchers("/jwt/exchange", "/jwt/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/members", "/api/members/exist").permitAll()
                         .requestMatchers("/api/categories").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auctions/**").permitAll() // 목록/상세
+                        .requestMatchers("/api/auctions/**").authenticated()
                         .requestMatchers("/api/categories/batch").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN") // 관리자 권한 필요
+                        .requestMatchers("/ws/**").permitAll()
                         .anyRequest().authenticated()) // 로그인 필요(가장 마지막)
 
                 .exceptionHandling(e -> e
@@ -112,7 +116,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:5173")); // 허용할 프론트엔드 주소
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 허용 메소드
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // 허용 메소드
         configuration.setAllowedHeaders(List.of("*")); // 요청 시 클라이언트가 보낼 수 있는 헤더
 //        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie")); // 서버가 응답 시 프론트에서 읽을 수 있는 헤더
         configuration.setAllowCredentials(true); // 클라이언트가 쿠키, Authorization 헤더를 보낼 수 있게 허용
