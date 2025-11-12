@@ -230,7 +230,11 @@ public class AuctionService {
 
     // 입찰
     public BidResDto placeBid(Long auctionId, String username, Long bidPrice) {
-        Auction auction = findAuctionOrThrow(auctionId);
+        // 일반 조회시 동시성 문제
+//        Auction auction = findAuctionOrThrow(auctionId);
+
+        // 비관적 락으로 경매 조회
+        Auction auction = auctionRepository.findByIdWithSellerForUpdate(auctionId).orElseThrow(() -> new IllegalArgumentException("해당 경매 정보를 찾을 수 없습니다."));
         Member member = memberRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("회원 없음"));
 
         // 사용자 검사 + 판매자 입찰 방지
@@ -272,7 +276,7 @@ public class AuctionService {
 
     // 편의 메서드
     private Auction findAuctionOrThrow(Long id) {
-        return auctionRepository.findById(id)
+        return auctionRepository.findByIdWithSeller(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 경매 정보를 찾을 수 없습니다."));
     }
 
