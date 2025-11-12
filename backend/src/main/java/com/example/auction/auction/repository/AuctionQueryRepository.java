@@ -53,7 +53,8 @@ public class AuctionQueryRepository {
                         inCategoryIds(cond.getCategoryIds()),
                         minPriceGoe(cond.getMinPrice()),
                         maxPriceLoe(cond.getMaxPrice()),
-                        eqStatus(cond.getStatus())
+                        eqStatus(cond.getStatus()),
+                        eqSellerId(cond.getSellerId())
                 )
                 .orderBy(getOrderSpecifier(sort))
                 .offset(pageable.getOffset())
@@ -70,7 +71,8 @@ public class AuctionQueryRepository {
                         inCategoryIds(cond.getCategoryIds()),
                         minPriceGoe(cond.getMinPrice()),
                         maxPriceLoe(cond.getMaxPrice()),
-                        eqStatus(cond.getStatus())
+                        eqStatus(cond.getStatus()),
+                        eqSellerId(cond.getSellerId())
                 )
                 .fetchOne();
 
@@ -100,6 +102,10 @@ public class AuctionQueryRepository {
 
     private BooleanExpression eqStatus(AuctionStatus status) {
         return status != null ? auction.status.eq(status) : null;
+    }
+
+    private BooleanExpression eqSellerId(Long sellerId) {
+        return sellerId != null ? auction.seller.id.eq(sellerId) : null;
     }
 
     // 정렬

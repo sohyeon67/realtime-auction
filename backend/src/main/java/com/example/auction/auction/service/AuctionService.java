@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -219,6 +220,15 @@ public class AuctionService {
 
     // 경매 목록 조회
     public Page<AuctionListResDto> getAuctions(AuctionSearchCond cond, Pageable pageable, AuctionSort sort) {
+        if (Boolean.TRUE.equals(cond.getMy())) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            Long sellerId = memberRepository.findByUsername(username)
+                    .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."))
+                    .getId();
+            cond.setSellerId(sellerId);
+        }
+
         return auctionQueryRepository.auctionList(cond, pageable, sort)
                 .map(auction -> {
                     if (auction.getMainImageUrl() != null) {

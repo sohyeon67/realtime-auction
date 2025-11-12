@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Box, Grid, Typography, Divider, Card, CardContent, Stack, Pagination, TextField, Button, IconButton, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Container, Box, Grid, Typography, Divider, Card, CardContent, Stack, Pagination, TextField, Button, IconButton, Select, MenuItem, FormControl, InputLabel, FormControlLabel, Checkbox } from '@mui/material';
 import { RichTreeView } from '@mui/x-tree-view';
 import api from '../../api/api';
 import { useSearchParams } from 'react-router-dom';
@@ -9,8 +9,10 @@ import { useCategories } from '../../hooks/useCategories';
 import AuctionCard from '../../components/user/auction/AuctionCard';
 import { AUCTION_STATUS, AUCTION_STATUS_OPTIONS } from '../../constants/auctionStatus';
 import { AUCTION_SORT, AUCTION_SORT_OPTIONS } from '../../constants/auctionSort';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function AuctionList() {
+  const { isLoggedIn } = useAuth();
   const { categories } = useCategories();
 
   // 브라우저 URL 쿼리스트링을 관리하기 위함
@@ -25,6 +27,7 @@ export default function AuctionList() {
   const size = parseInt(searchParams.get("size")) || 12;
   const status = searchParams.get("status") || AUCTION_STATUS.ONGOING;
   const sort = searchParams.get("sort") || AUCTION_SORT.POPULARITY;
+  const isMyAuction = searchParams.get("my") === "true";
 
   // 최초 렌더링 시 URL에 있는 값으로 초기화하기 위해서
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
@@ -45,6 +48,7 @@ export default function AuctionList() {
     params.append("size", size);
     params.append("status", status);
     params.append("sort", sort);
+    if (isMyAuction) params.append("my", "true");
 
     // 검색 필터 값이 있는 것들만 세팅
     if (categoryIds?.length > 0) categoryIds.forEach(id => params.append("categoryIds", id));
@@ -94,6 +98,7 @@ export default function AuctionList() {
     };
 
     // 값이 있을 때만 url에 붙인다.
+    if (isMyAuction) params.my = "true";
     if (categoryIds?.length > 0) params.categoryIds = categoryIds;
     if (keyword?.trim()) params.keyword = keyword.trim();
     if (sellerName?.trim()) params.sellerName = sellerName.trim();
@@ -148,6 +153,25 @@ export default function AuctionList() {
         </Typography>
 
         <Stack direction="row" spacing={2}>
+
+          {
+            isLoggedIn && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isMyAuction}
+                    onChange={(e) => {
+                      const params = new URLSearchParams(searchParams);
+                      params.set("my", e.target.checked ? "true" : "false");
+                      params.set("page", "1");
+                      setSearchParams(params);
+                    }}
+                  />
+                }
+                label="내 경매"
+              />
+            )
+          }
 
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel id="size-select-label">페이지당 항목</InputLabel>
