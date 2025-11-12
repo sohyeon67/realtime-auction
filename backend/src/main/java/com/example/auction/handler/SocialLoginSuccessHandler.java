@@ -40,7 +40,6 @@ public class SocialLoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         log.info("========= 소셜 로그인 성공 핸들러 =========");
         String username = authentication.getName();
-        String role = authentication.getAuthorities().iterator().next().getAuthority();
 
         // Refresh Token 발급
         String refreshToken = jwtTokenProvider.createRefreshToken(username);

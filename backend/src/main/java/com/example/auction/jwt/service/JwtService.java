@@ -6,6 +6,7 @@ import com.example.auction.jwt.domain.RefreshToken;
 import com.example.auction.jwt.dto.JwtResponseDto;
 import com.example.auction.jwt.dto.RefreshTokenReqDto;
 import com.example.auction.jwt.repository.RefreshTokenRepository;
+import com.example.auction.member.domain.RoleType;
 import com.example.auction.util.JwtTokenProvider;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
@@ -80,7 +81,7 @@ public class JwtService {
 
         // 정보 추출
         String username = jwtTokenProvider.extractUsername(refreshToken);
-        String role = jwtTokenProvider.extractRole(refreshToken);
+        String role = RoleType.USER.name();
 
         // 토큰 생성
         String newAccessToken = jwtTokenProvider.createAccessToken(username, role);

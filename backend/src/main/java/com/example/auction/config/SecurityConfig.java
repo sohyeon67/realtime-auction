@@ -118,7 +118,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("http://localhost:5173")); // 허용할 프론트엔드 주소
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // 허용 메소드
         configuration.setAllowedHeaders(List.of("*")); // 요청 시 클라이언트가 보낼 수 있는 헤더
-//        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie")); // 서버가 응답 시 프론트에서 읽을 수 있는 헤더
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie")); // 서버가 응답 시 프론트에서 읽을 수 있는 헤더
         configuration.setAllowCredentials(true); // 클라이언트가 쿠키, Authorization 헤더를 보낼 수 있게 허용
         configuration.setMaxAge(3600L); // Preflight 요청(OPTIONS) 캐시 유지 시간
 

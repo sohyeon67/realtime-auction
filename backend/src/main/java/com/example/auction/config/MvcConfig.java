@@ -23,7 +23,6 @@ public class MvcConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowCredentials(true)
                 .allowedHeaders("*");
-//                .exposedHeaders("Set-Cookie", "Authorization")
 
         // 정적 파일 요청
         corsRegistry.addMapping("/files/**")
