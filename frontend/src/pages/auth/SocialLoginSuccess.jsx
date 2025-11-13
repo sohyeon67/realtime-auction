@@ -18,13 +18,10 @@ export default function SocialLoginSuccess() {
         const res = await api.post(
           "/jwt/exchange",
           {}, // body가 필요 없으면 빈 객체
-          { withCredentials: true } // 쿠키 포함
+          { withCredentials: true } // 임시 쿠키를 이용해 토큰들을 발급받기 위함
         );
 
-        const data = res.data;
-
-        login(data.accessToken);
-        localStorage.setItem("refreshToken", data.refreshToken);
+        login(res.data.accessToken);
 
         navigate("/");
       } catch (err) {

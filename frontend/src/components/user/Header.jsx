@@ -29,8 +29,8 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    navigate("/", { replace: true });
     logout();
+    navigate("/", { replace: true });
   };
 
   const [open, setOpen] = useState(false);

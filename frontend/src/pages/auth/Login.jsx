@@ -3,6 +3,8 @@ import { useState } from "react";
 import api from "../../api/api";
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from "../../contexts/AuthContext";
+import GoogleLogo from '../../assets/google.png';
+import NaverLogo from '../../assets/naver.png';
 
 const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL;
 
@@ -21,7 +23,6 @@ export default function Login() {
   const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault();
     setError("");
 
     if (!email || !password) {
@@ -30,23 +31,24 @@ export default function Login() {
     }
 
     try {
-      const res = await api.post("/login", {
-        username: email,
-        password,
-      });
-
+      const res = await api.post(
+        "/login",
+        {
+          username: email,
+          password,
+        },
+        { withCredentials: true } // 비동기 요청에서 쿠키를 주고 받기 위함
+      );
       login(res.data.accessToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
 
       // 로그인 성공 후 페이지 이동
       // 히스토리에서 로그인 페이지가 원래 접근하려던 페이지로 대체됨
       // 로그인 후에 뒤로가기를 눌러도 로그인 페이지가 나오지 않음
       navigate(from, { replace: true });
-
     } catch (err) {
       setError("이메일 또는 비밀번호가 잘못되었습니다.");
     }
-  }
+  };
 
 
   // 소셜 로그인
@@ -56,59 +58,59 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <Stack spacing={2}>
+    <Stack spacing={3}>
 
-        <Typography variant="h4" textAlign="center">로그인</Typography>
+      <TextField
+        label="이메일"
+        fullWidth name="email"
+        autoFocus value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <TextField
+        label="비밀번호"
+        type="password"
+        fullWidth
+        name="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)} />
 
-        <TextField
-          label="Email Address"
-          fullWidth name="email"
-          autoFocus value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <TextField
-          label="Password"
-          type="password"
-          fullWidth
-          name="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)} />
-
-        {error && (
-          <Typography variant="body2" color="error" textAlign="center">
-            {error}
-          </Typography>
-        )}
-
-        <Button type="submit" variant="contained" color="primary">로그인</Button>
-
-        <Divider>or</Divider>
-
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => handleSocialLogin("google")}
-          >
-            Sign in with Google
-          </Button>
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => handleSocialLogin("naver")}
-          >
-            Sign in with Naver
-          </Button>
-        </Box>
-        <Typography variant="body2" textAlign="center">
-          계정이 없으신가요?{' '}
-          <Link to="/auth/signup" component={RouterLink}>
-            회원가입
-          </Link>
+      {error && (
+        <Typography variant="body2" color="error" textAlign="center">
+          {error}
         </Typography>
+      )}
 
-      </Stack>
-    </form >
+      <Button type="button" onClick={handleLogin} variant="contained" color="primary">로그인</Button>
+
+      <Divider>or</Divider>
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Button
+          fullWidth
+          variant="outlined"
+          color="google"
+          startIcon={<img src={GoogleLogo} alt="Google" style={{ width: 20, height: 20 }} />}
+          onClick={() => handleSocialLogin("google")}
+        >
+          구글 로그인
+        </Button>
+        <Button
+          fullWidth
+          variant="outlined"
+          color="naver"
+          startIcon={<img src={NaverLogo} alt="Google" style={{ width: 20, height: 20 }} />}
+          onClick={() => handleSocialLogin("naver")}
+        >
+          네이버 로그인
+        </Button>
+      </Box>
+      <Typography variant="body2" textAlign="center">
+        계정이 없으신가요?{' '}
+        <Link to="/auth/signup" component={RouterLink}>
+          회원가입
+        </Link>
+      </Typography>
+
+    </Stack>
   );
 }
