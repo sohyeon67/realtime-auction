@@ -20,7 +20,14 @@ api.interceptors.request.use(config => {
 api.interceptors.response.use(
   response => response,
   error => {
-    if (error.response && error.response.status == 401) {
+    const config = error.config;
+
+    // 로그인 요청일 경우 redirect 하지 않음
+    if (config?.url.includes('/login')) {
+      return Promise.reject(error);
+    }
+
+    if (error.response?.status == 401) {
       window.location.href = "/auth/login"; // 토큰 만료시 로그인 페이지 이동
     }
     return Promise.reject(error);
