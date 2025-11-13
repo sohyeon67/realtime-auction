@@ -1,5 +1,6 @@
 package com.example.auction.handler;
 
+import com.example.auction.jwt.dto.JwtResponseDto;
 import com.example.auction.jwt.service.JwtService;
 import com.example.auction.util.JwtTokenProvider;
 import jakarta.servlet.ServletException;
@@ -12,16 +13,20 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+/**
+ * 자체 로그인 성공 핸들러
+ * 프론트에서 "/login"으로 접근
+ * Access Token과 Refresh Token을 발급
+ * Refresh Token은 HttpOnly 쿠키로 전달
+ */
 @Component
 @Qualifier("LoginSuccessHandler")
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
-    private final JwtTokenProvider jwtTokenProvider;
 
-    public LoginSuccessHandler(JwtService jwtService, JwtTokenProvider jwtTokenProvider) {
+    public LoginSuccessHandler(JwtService jwtService) {
         this.jwtService = jwtService;
-        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     @Override
@@ -29,17 +34,14 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
         String username = authentication.getName();
         String role = authentication.getAuthorities().iterator().next().toString();
 
-        // JWT(Access/Refresh) 발급
-        String accessToken = jwtTokenProvider.createAccessToken(username, role);
-        String refreshToken = jwtTokenProvider.createRefreshToken(username);
+        // 로그인 시 기존 refresh token 없음 -> null 전달
+        // Refresh Token은 쿠키로 발급
+        JwtResponseDto jwt = jwtService.rotateTokens(null, username, role, response);
 
-        // 발급한 Refresh Token DB 저장 (화이트리스트)
-        jwtService.addRefresh(username, refreshToken);
-
+        // Access Token만 JSON으로 프론트에 전달
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-
-        String json = String.format("{\"accessToken\":\"%s\", \"refreshToken\":\"%s\"}", accessToken, refreshToken);
+        String json = String.format("{\"accessToken\":\"%s\"}", jwt.accessToken());
         response.getWriter().write(json);
         response.getWriter().flush();
     }

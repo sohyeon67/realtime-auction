@@ -1,22 +1,18 @@
 package com.example.auction.handler;
 
-import com.example.auction.exception.InvalidTokenException;
 import com.example.auction.jwt.service.JwtService;
+import com.example.auction.util.CookieUtils;
 import com.example.auction.util.JwtTokenProvider;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.util.StreamUtils;
 import org.springframework.util.StringUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-
+/**
+ * 로그아웃 시 RefreshToken을 쿠키에서 제거하기 위한 핸들러
+ * 프론트에서 "/logout"으로 접근
+ */
 public class RefreshTokenLogoutHandler implements LogoutHandler {
 
     private final JwtService jwtService;
@@ -36,30 +32,19 @@ public class RefreshTokenLogoutHandler implements LogoutHandler {
      */
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        try {
-            String body = StreamUtils.copyToString(request.getInputStream(), StandardCharsets.UTF_8);
+        // 쿠키에서 refresh token 읽기
+        String refreshToken = CookieUtils.extractRefreshTokenFromCookie(request);
+        if (!StringUtils.hasText(refreshToken)) return;
 
-            if (!StringUtils.hasText(body)) return;
+        // 유효성 검증
+        if (!jwtTokenProvider.validateToken(refreshToken)) return;
 
-            // JSON 파싱
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonNode = mapper.readTree(body);
+        // DB에서 Refresh Token 삭제
+        jwtService.removeRefresh(refreshToken);
 
-            // refreshToken 추출
-            String refreshToken = jsonNode.path("refreshToken").asText();
-            if (!StringUtils.hasText(refreshToken)) return;
-
-            // 유효성 검증
-            if (!jwtTokenProvider.validateToken(refreshToken)) {
-                return;
-            }
-
-            // 특정 Refresh Token 삭제
-            jwtService.removeRefresh(refreshToken);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Refresh Token 읽기 실패", e);
-        }
+        // 브라우저 쿠키 삭제
+        CookieUtils.deleteRefreshTokenCookie(response);
     }
+
 
 }

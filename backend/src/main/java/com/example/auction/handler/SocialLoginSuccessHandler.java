@@ -51,16 +51,19 @@ public class SocialLoginSuccessHandler implements AuthenticationSuccessHandler {
         // JSON body 전달 -> 리다이렉트 응답이므로 바디를 쓸 수 없음
         // 쿼리 파라미터 전달 -> URL에 토큰이 노출되고 히스토리에 남아 보안 취약
         // 쿠키 방식 - 자동 전송 사용하기
-        response.addCookie(createCookie("refreshToken", refreshToken));
-        response.sendRedirect("http://localhost:5173/auth/callback"); // 소셜로그인 성공 후 쿠키를 받아서 백엔드 쪽으로 쿠키를 헤더로 바꾸도록함
+        response.addCookie(createTempCookie("refreshToken", refreshToken));
+        response.sendRedirect("http://localhost:5173/auth/callback"); // 소셜로그인 성공 후 쿠키를 받아서 백엔드 쪽으로 토큰들을 다시 발급받도록 함
     }
 
-    private Cookie createCookie(String key, String value) {
+    /**
+     * 소셜로그인 성공용 임시 토큰
+     */
+    private Cookie createTempCookie(String key, String value) {
         Cookie cookie = new Cookie(key, value);
         cookie.setHttpOnly(true); // js 쿠키 접근 불가
-        cookie.setSecure(false); // true이면 https에서만
+        cookie.setSecure(true); // true이면 https에서만
         cookie.setPath("/");
-        cookie.setMaxAge(10); // 10초 (프론트에서 발급 후 바로 헤더 전환 로직 진행 예정)
+        cookie.setMaxAge(10); // 10초 (프론트에서 access token 발급용)
         return cookie;
     }
 }

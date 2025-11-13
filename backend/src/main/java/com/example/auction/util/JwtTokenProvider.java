@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * jwt 토큰 생성/검증
+ * jwt 토큰 생성/검증만 담당
  */
 @Component
 public class JwtTokenProvider {
