@@ -75,7 +75,13 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable) // HTTP Basic 비활성화. OAuth나 JWT는 Bearer 타입 이용
 
                 .logout(logout -> logout
+                        .logoutUrl("/logout")
                         .addLogoutHandler(new RefreshTokenLogoutHandler(jwtService, jwtTokenProvider))
+                        .logoutSuccessHandler(((request, response, authentication) -> {
+                            // 로그아웃 성공 시 200 OK. 프론트에서 로그인 페이지로 리다이렉트 되지 않도록
+                            // 이게 없으면 authenticationEntryPoint에서 401로 응답해버림
+                            response.setStatus(HttpServletResponse.SC_OK);
+                        }))
                 )
 
                 .oauth2Login(oauth2 -> oauth2
