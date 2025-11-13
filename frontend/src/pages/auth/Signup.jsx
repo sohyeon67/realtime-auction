@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   TextField,
   Button,
@@ -89,8 +89,6 @@ export default function Signup() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-
     if (!validate()) return;
 
     if (!isEmailChecked) return;
@@ -133,91 +131,88 @@ export default function Signup() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Stack spacing={3}>
-        <Typography variant="h4" textAlign="center">회원가입</Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <TextField
-            fullWidth
-            label="이메일"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            error={!!errors.email}
-            helperText={errors.email}
-            autoFocus
-          />
-          <Button
-            variant="outlined"
-            onClick={checkEmail}
-            color={isEmailChecked ? "success" : "primary"}
-            sx={{
-              whiteSpace: 'nowrap', // 줄바꿈 방지
-            }}>
-            {isEmailChecked ? "확인완료" : "중복확인"}
-          </Button>
-        </Box>
-
+    <Stack spacing={3}>
+      <Box sx={{ display: 'flex', gap: 1 }}>
         <TextField
           fullWidth
-          type="password"
-          label="비밀번호"
-          name="password"
-          value={formData.password}
+          label="이메일"
+          name="email"
+          value={formData.email}
           onChange={handleInputChange}
-          error={!!errors.password}
-          helperText={errors.password}
+          error={!!errors.email}
+          helperText={errors.email}
+          autoFocus
         />
-        <TextField
-          fullWidth
-          type="password"
-          label="비밀번호 확인"
-          name="confirmPassword"
-          value={formData.confirmPassword}
-          onChange={handleInputChange}
-          error={!!errors.confirmPassword}
-          helperText={errors.confirmPassword}
-        />
-        <TextField
-          fullWidth
-          label="사용자 이름"
-          name="username"
-          value={formData.username}
-          onChange={handleInputChange}
-          error={!!errors.username}
-          helperText={errors.username}
-        />
-        <TextField
-          fullWidth
-          label="닉네임"
-          name="nickname"
-          value={formData.nickname}
-          onChange={handleInputChange}
-          error={!!errors.nickname}
-          helperText={errors.nickname}
-        />
-        <TextField
-          fullWidth
-          label="연락처"
-          name="phone"
-          value={formData.phone}
-          onChange={handleInputChange}
-          error={!!errors.phone}
-          helperText={errors.phone}
-        />
-        <Button fullWidth variant="contained" color="primary" type="submit">
-          가입하기
+        <Button
+          variant="outlined"
+          onClick={checkEmail}
+          color={isEmailChecked ? "success" : "primary"}
+          sx={{
+            whiteSpace: 'nowrap', // 줄바꿈 방지
+          }}>
+          {isEmailChecked ? "확인완료" : "중복확인"}
         </Button>
-        <Typography variant="body2" textAlign="center">
-          이미 계정이 있으신가요?{' '}
-          <Link
-            to="/auth/login"
-            component={RouterLink}
-          >
-            로그인
-          </Link>
-        </Typography>
-      </Stack>
-    </form>
+      </Box>
+
+      <TextField
+        fullWidth
+        type="password"
+        label="비밀번호"
+        name="password"
+        value={formData.password}
+        onChange={handleInputChange}
+        error={!!errors.password}
+        helperText={errors.password}
+      />
+      <TextField
+        fullWidth
+        type="password"
+        label="비밀번호 확인"
+        name="confirmPassword"
+        value={formData.confirmPassword}
+        onChange={handleInputChange}
+        error={!!errors.confirmPassword}
+        helperText={errors.confirmPassword}
+      />
+      <TextField
+        fullWidth
+        label="사용자 이름"
+        name="username"
+        value={formData.username}
+        onChange={handleInputChange}
+        error={!!errors.username}
+        helperText={errors.username}
+      />
+      <TextField
+        fullWidth
+        label="닉네임"
+        name="nickname"
+        value={formData.nickname}
+        onChange={handleInputChange}
+        error={!!errors.nickname}
+        helperText={errors.nickname}
+      />
+      <TextField
+        fullWidth
+        label="연락처"
+        name="phone"
+        value={formData.phone}
+        onChange={handleInputChange}
+        error={!!errors.phone}
+        helperText={errors.phone}
+      />
+      <Button fullWidth variant="contained" color="primary" onClick={handleSubmit}>
+        가입하기
+      </Button>
+      <Typography variant="body2" textAlign="center">
+        이미 계정이 있으신가요?{' '}
+        <Link
+          to="/auth/login"
+          component={RouterLink}
+        >
+          로그인
+        </Link>
+      </Typography>
+    </Stack>
   );
 };

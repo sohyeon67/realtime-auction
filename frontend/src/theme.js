@@ -11,6 +11,14 @@ const theme = createTheme({
       main: grey[500],
       contrastText: "#ffffff",
     },
+    naver: {
+      main: "#03a94d",
+      contrastText: "#ffffff",
+    },
+    google: {
+      main: "#0b57d0",
+      contrastText: "#ffffff",
+    },
   }
 });
 
